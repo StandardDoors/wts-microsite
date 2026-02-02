@@ -1,3 +1,6 @@
 Installer/
 .rulebook-ai/
 .rulebook-ai
+node_modules/
+dist/
+.DS_Store

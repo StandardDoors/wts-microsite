@@ -1,0 +1,13 @@
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+[[redirects]]
+  from = "/*.php"
+  to = "/:splat.html"
+  status = 301
+
+[[redirects]]
+  from = "/index.php"
+  to = "/index.html"
+  status = 301
