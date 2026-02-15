@@ -30,6 +30,7 @@ class SiteBuilder
         $this->cleanDistDirectory();
         $this->createDistDirectory();
         $this->processPhpFiles();
+        $this->createRedirectFiles();
         $this->copyAssets();
         $this->copyFavicons();
 
@@ -101,6 +102,47 @@ class SiteBuilder
         }
 
         $this->builtFiles[] = $outputFile;
+    }
+
+    private function createRedirectFiles(): void
+    {
+        echo "🔄 Creating redirect files...\n";
+
+        foreach ($this->builtFiles as $htmlFile) {
+            $phpFile = str_replace('.html', '.php', $htmlFile);
+            $phpPath = "{$this->distDir}/{$phpFile}";
+
+            // Don't create redirect for index (already exists as index.html)
+            if ($phpFile === 'index.php') {
+                continue;
+            }
+
+            $redirectContent = $this->getRedirectContent($htmlFile);
+            file_put_contents($phpPath, $redirectContent);
+
+            echo "  • {$phpFile} → {$htmlFile}\n";
+        }
+    }
+
+    private function getRedirectContent(string $targetFile): string
+    {
+        return <<<HTML
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="refresh" content="0;url={$targetFile}">
+    <link rel="canonical" href="{$targetFile}">
+    <title>Redirecting...</title>
+    <script>
+        window.location.href = "{$targetFile}";
+    </script>
+</head>
+<body>
+    <p>Redirecting to <a href="{$targetFile}">{$targetFile}</a>...</p>
+</body>
+</html>
+HTML;
     }
 
     private function copyAssets(): void
