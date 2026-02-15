@@ -30,7 +30,7 @@ class SiteBuilder
         $this->cleanDistDirectory();
         $this->createDistDirectory();
         $this->processPhpFiles();
-        $this->createRedirectFiles();
+        $this->create404Page();
         $this->copyAssets();
         $this->copyFavicons();
 
@@ -104,45 +104,39 @@ class SiteBuilder
         $this->builtFiles[] = $outputFile;
     }
 
-    private function createRedirectFiles(): void
+    private function create404Page(): void
     {
-        echo "🔄 Creating redirect files...\n";
+        echo "🔄 Creating 404 redirect page...\n";
 
-        foreach ($this->builtFiles as $htmlFile) {
-            $phpFile = str_replace('.html', '.php', $htmlFile);
-            $phpPath = "{$this->distDir}/{$phpFile}";
-
-            // Don't create redirect for index (already exists as index.html)
-            if ($phpFile === 'index.php') {
-                continue;
-            }
-
-            $redirectContent = $this->getRedirectContent($htmlFile);
-            file_put_contents($phpPath, $redirectContent);
-
-            echo "  • {$phpFile} → {$htmlFile}\n";
-        }
-    }
-
-    private function getRedirectContent(string $targetFile): string
-    {
-        return <<<HTML
+        $content = <<<'HTML'
 <!DOCTYPE HTML>
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="refresh" content="0;url={$targetFile}">
-    <link rel="canonical" href="{$targetFile}">
-    <title>Redirecting...</title>
+    <title>Page Not Found</title>
     <script>
-        window.location.href = "{$targetFile}";
+        // Redirect .php URLs to .html equivalents
+        (function() {
+            const path = window.location.pathname;
+            
+            // Check if URL ends with .php
+            if (path.endsWith('.php')) {
+                // Replace .php with .html and redirect
+                const newPath = path.replace(/\.php$/, '.html');
+                window.location.replace(newPath);
+            }
+        })();
     </script>
 </head>
 <body>
-    <p>Redirecting to <a href="{$targetFile}">{$targetFile}</a>...</p>
+    <h1>404 - Page Not Found</h1>
+    <p>Redirecting...</p>
 </body>
 </html>
 HTML;
+
+        file_put_contents("{$this->distDir}/404.html", $content);
+        echo "  • 404.html created for .php → .html redirects\n";
     }
 
     private function copyAssets(): void
