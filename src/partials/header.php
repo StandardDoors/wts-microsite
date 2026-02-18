@@ -1,6 +1,6 @@
 <?php
-$page = $_SERVER['PHP_SELF'];
-$sec = "43200";
+$page = $_SERVER['REQUEST_URI'];
+$sec = 43200;
 ?>
 <!DOCTYPE HTML>
 <html>
