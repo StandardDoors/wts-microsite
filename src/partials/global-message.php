@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Global message partial
  *
@@ -8,7 +9,6 @@
  * @subpackage Global Message
  * @since 1.0.0
  */
-
 function wts_render_message_banner(string $lang): void
 {
     $str_expiry_date = "2026-01-05"; #YYYY-MM-DD

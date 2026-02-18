@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Global message partial
  *
@@ -9,23 +10,31 @@
  * @since 1.0.0
  */
 
+require_once __DIR__ . '/../Helpers/DateHelper.php';
+
+use WTS\Helpers\DateHelper;
+
+// Banner expiry dates (YYYY-MM-DD format)
+define('WTS_BANNER_EXPIRY_FULL', '2026-01-05');
+define('WTS_BANNER_EXPIRY_SHORT', '2026-01-12');
+
 function wts_render_message_banner(string $lang): void
 {
-    $timezone = new DateTimeZone('America/Toronto');
-    $current_date = (new DateTimeImmutable('now', $timezone))->setTime(0, 0, 0);
-    $expiry_date = (new DateTimeImmutable('2026-01-05', $timezone))->setTime(0, 0, 0);
-    $expiry_date2 = (new DateTimeImmutable('2026-01-12', $timezone))->setTime(0, 0, 0);
+    $dateHelper = new DateHelper();
 
-    if ($current_date < $expiry_date) {
+    // Show full banner before first expiry date
+    if ($dateHelper->isBeforeDate(WTS_BANNER_EXPIRY_FULL)) {
         if ($lang === 'bi') {
             echo wts_message_banner_full('fr');
             echo wts_message_banner_full('en');
         } else {
             echo wts_message_banner_full($lang);
         }
+        return;
     }
 
-    if ($current_date > $expiry_date && $current_date < $expiry_date2) {
+    // Show short banner between first and second expiry dates
+    if ($dateHelper->isBetweenDates(WTS_BANNER_EXPIRY_FULL, WTS_BANNER_EXPIRY_SHORT)) {
         if ($lang === 'bi') {
             echo wts_message_banner_short('fr');
             echo wts_message_banner_short('en');

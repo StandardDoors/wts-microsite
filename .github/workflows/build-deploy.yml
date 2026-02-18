@@ -22,6 +22,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     
+    # Set timezone for consistent date handling
+    env:
+      TZ: America/Toronto
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,6 +35,7 @@ jobs:
         with:
           php-version: '8.1'
           tools: composer:v2
+          extensions: intl
 
       - name: Get Composer cache directory
         id: composer-cache
@@ -44,8 +49,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-composer-
 
-      - name: Install dependencies
-        run: composer install --no-dev --prefer-dist --no-progress
+      - name: Install dependencies (with dev for tests)
+        run: composer install --prefer-dist --no-progress
+
+      - name: Run tests
+        run: composer test -- --exclude-group=network
 
       - name: Build static site
         run: composer build

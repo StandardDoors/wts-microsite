@@ -3,7 +3,7 @@
 
 /**
  * Static Site Builder for WTS Landing Pages
- * 
+ *
  * Processes PHP files in src/ directory and outputs static HTML to dist/
  */
 

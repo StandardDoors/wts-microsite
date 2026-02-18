@@ -1,16 +1,16 @@
 #container, #left, #right{
-    margin: 0px; 
-    padding: 30px; 
+    margin: 0px;
+    padding: 30px;
     border: 0px;
 }
 
 #left{
-    max-width: 100%; 
+    max-width: 100%;
     float: left;
 }
 
 #right{
-    max-width: 100%; 
+    max-width: 100%;
     float: left;
 }
 

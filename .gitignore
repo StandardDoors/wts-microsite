@@ -11,6 +11,9 @@ composer.lock
 .vscode/
 .DS_Store
 
+# Test artifacts
+.phpunit.result.cache
+
 # Legacy
 Installer/
 .rulebook-ai/

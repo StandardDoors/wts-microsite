@@ -1,4 +1,5 @@
 <?php
+
 $pageTitle = 'WTS Home Tab Bilingual';
 $lang = 'bi';
 include 'partials/header.php';
@@ -10,4 +11,3 @@ include_once 'partials/message-banner.php';
 wts_render_message_banner($lang);
 
 include 'partials/footer.php';
-?>

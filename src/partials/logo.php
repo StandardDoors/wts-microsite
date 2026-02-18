@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Logo partial
  *
@@ -8,7 +9,6 @@
  * @subpackage Logo
  * @since 1.0.0
  */
-
 function wts_render_logo(string $lang, string $site = 'default'): void
 {
     $href = 'https://standarddoors.com/';
