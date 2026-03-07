@@ -4,8 +4,6 @@ $pageTitle = 'WTS Home Tab Bilingual';
 $lang = 'bi';
 include 'partials/header.php';
 
-echo 'potato';
-
 include_once 'partials/logo.php';
 wts_render_logo($lang);
 
