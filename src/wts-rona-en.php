@@ -7,6 +7,8 @@ include 'partials/header.php';
 include_once 'partials/logo.php';
 wts_render_logo($lang);
 
+echo '<!-- YO YO YO -->';
+
 include_once 'partials/message-banner.php';
 wts_render_message_banner($lang);
 
