@@ -1,11 +1,12 @@
 <?php
-$page = $_SERVER['REQUEST_URI'];
+$page = $_SERVER['PHP_SELF'];
 $sec = 43200;
 ?>
 <!DOCTYPE HTML>
 <html>
     <head>
-        <meta http-equiv="refresh" content="<?php echo $sec?>;URL='<?php echo $page?>'">
+        <meta charset="utf-8">
+        <meta http-equiv="refresh" content="<?php echo $sec?>; URL=<?php echo $page?>">
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <title><?php echo $pageTitle ?? 'WTS Home Tab'; ?></title>
         <!-- goto https://www.textfixer.com/html/html-character-encoding.php to encode accents -->

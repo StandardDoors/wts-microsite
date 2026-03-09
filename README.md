@@ -13,11 +13,13 @@ composer build      # Generate static HTML
 ## Quality Tools
 
 ```bash
-composer lint       # Check code style (PSR-12)
-composer lint:fix   # Auto-fix style issues
-composer analyse    # Static analysis (PHPStan level 5)
-composer test       # Run tests
-composer check      # Run all: lint → analyse → test
+composer lint          # Check code style (PSR-12)
+composer lint:fix      # Auto-fix style issues
+composer analyse       # Static analysis (PHPStan level 5)
+composer test          # Run unit tests (excludes html-validation and network groups)
+composer test:html     # Run HTML validation tests against dist/ (requires prior build)
+composer validate-html # Build then run HTML validation tests
+composer check         # Run all: lint → analyse → test → validate-html
 ```
 
 Run `composer check` before committing to catch issues early.
@@ -51,6 +53,7 @@ Pushing to `main` triggers automatic deployment:
 - Static analysis (PHPStan)
 - Unit tests (PHPUnit)
 - Build verification
+- HTML validation (PHPUnit structural checks + W3C Nu HTML Checker via Docker)
 
 **On push to main:**
 - All checks above + deploy to GitHub Pages
@@ -78,3 +81,4 @@ No PHP execution happens on the server—everything is pre-rendered.
 
 - PHP 8.1+ with `intl` extension
 - Composer
+- Docker (for running `validate-html` and `composer check` locally — used for W3C Nu HTML Checker)

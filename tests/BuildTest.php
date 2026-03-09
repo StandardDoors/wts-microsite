@@ -41,24 +41,6 @@ class BuildTest extends TestCase
         $this->assertGreaterThan(0, count($htmlFiles), 'Expected at least one HTML file');
     }
 
-    public function testGeneratedHtmlIsValid(): void
-    {
-        $this->buildSite();
-
-        $htmlFiles = glob("{$this->testDistDir}/*.html");
-
-        foreach ($htmlFiles as $file) {
-            $content = file_get_contents($file);
-
-            // Basic HTML validation
-            $this->assertStringContainsString('<!DOCTYPE', $content, "{$file} missing DOCTYPE");
-            $this->assertStringContainsString('<html>', $content, "{$file} missing <html> tag");
-            $this->assertStringContainsString('</html>', $content, "{$file} missing </html> tag");
-            $this->assertStringContainsString('<body>', $content, "{$file} missing <body> tag");
-            $this->assertStringContainsString('</body>', $content, "{$file} missing </body> tag");
-        }
-    }
-
     public function testBuildCopiesAssets(): void
     {
         $this->buildSite();

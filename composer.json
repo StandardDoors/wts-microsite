@@ -24,15 +24,21 @@
     "scripts": {
         "build": "php build.php",
         "serve": "php -S localhost:8000 -t src",
-        "test": "phpunit",
+        "test": "phpunit --exclude-group=html-validation,network",
+        "test:html": "vendor/bin/phpunit --group=html-validation",
         "clean": "rm -rf dist",
         "lint": "phpcs",
         "lint:fix": "phpcbf",
         "analyse": "phpstan analyse",
+        "validate-html": [
+            "@build",
+            "@test:html"
+        ],
         "check": [
             "@lint",
             "@analyse",
-            "@test"
+            "@test",
+            "@validate-html"
         ]
     }
 }

@@ -25,6 +25,6 @@ function wts_render_logo(string $lang, string $site = 'default'): void
     }
 
     echo '<div class="centerimage" style="margin-bottom: 2rem;">
-        <a href="' . $href . '" target="_blank"><img src="' . $logo . '"></a>
+        <a href="' . $href . '" target="_blank"><img src="' . $logo . '" alt="Standard Doors"></a>
     </div>';
 }

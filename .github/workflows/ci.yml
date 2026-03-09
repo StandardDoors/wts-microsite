@@ -188,6 +188,16 @@ jobs:
       - name: Build static site
         run: composer build
 
+      - name: Validate HTML output
+        run: composer test -- --group=html-validation
+
+      - name: Validate HTML with Nu Checker (W3C)
+        run: |
+          docker run --rm \
+            -v "$(pwd)/dist":/dist \
+            ghcr.io/validator/validator:latest \
+            vnu --errors-only --skip-non-html /dist
+
       - name: Verify build output
         run: |
           if [ ! -d "dist" ]; then
