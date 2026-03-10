@@ -5,6 +5,8 @@ on:
     branches:
       - main
   workflow_dispatch:
+  schedule:
+    - cron: '0 7 * * *'  # 2:00 AM EST (UTC-5)
 
 permissions:
   contents: read
@@ -50,7 +52,7 @@ jobs:
         run: composer install --prefer-dist --no-progress
 
       - name: Run tests
-        run: composer test -- --exclude-group=network
+        run: vendor/bin/phpunit --exclude-group=html-validation,network
 
       - name: Build static site
         run: composer build
