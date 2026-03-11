@@ -1,84 +1,51 @@
 # WTS Landing Pages
 
-Static landing pages for WTS (Windows That Seal). PHP files are processed into static HTML during build and deployed automatically to GitHub Pages.
+Static landing pages for WTS (Windows That Seal). PHP source files are pre-rendered to static HTML at build time and served via GitHub Pages. Pages auto-refresh every hour so in-store displays always pick up the latest deploy.
 
-## Quick Start
+## How it works
+
+`build.php` processes each `src/*.php` file through PHP, captures the output as static HTML, and writes it to `dist/`. No PHP runs on the server. A custom `dist/404.html` redirects legacy `.php` URLs to their `.html` equivalents.
+
+## Quick start
 
 ```bash
-composer install    # Install dependencies
-composer serve      # Preview at localhost:8000
-composer build      # Generate static HTML
+composer install  # Install dependencies
+composer serve    # Preview at localhost:8000
+composer build    # Generate static HTML in dist/
 ```
 
-## Quality Tools
+## Project structure
+
+- `src/*.php` — Source pages
+- `src/partials/` — Shared components (header, footer, logo, banners)
+- `src/Helpers/` — Utility classes (DateHelper, etc.)
+- `src/assets/` — CSS, images, logos
+- `dist/` — Generated output (git-ignored)
+- `tests/` — PHPUnit tests
+
+## Quality tools
+
+Run `composer check` before committing — it runs the full suite:
 
 ```bash
-composer lint          # Check code style (PSR-12)
+composer lint          # PSR-12 code style check
 composer lint:fix      # Auto-fix style issues
-composer analyse       # Static analysis (PHPStan level 5)
-composer test          # Run unit tests (excludes html-validation and network groups)
-composer test:html     # Run HTML validation tests against dist/ (requires prior build)
-composer validate-html # Build then run HTML validation tests
-composer check         # Run all: lint → analyse → test → validate-html
+composer analyse       # PHPStan static analysis (level 5)
+composer test          # Unit tests
+composer validate-html # Build + HTML validation (PHPUnit + W3C Nu Checker)
+composer check         # All of the above
 ```
-
-Run `composer check` before committing to catch issues early.
-
-## Development
-
-Edit PHP files in `src/` and preview changes with `composer serve`. The site uses simple PHP includes for header/footer partials.
-
-**Structure:**
-- `src/*.php` → Source pages (converted to HTML)
-- `src/partials/` → Reusable components (header, footer, logo, banners)
-- `src/Helpers/` → Utility classes (DateHelper, etc.)
-- `src/assets/` → CSS, images, logos
-- `dist/` → Generated static files (git-ignored)
-- `tests/` → PHPUnit tests
-
-## Deployment
-
-Pushing to `main` triggers automatic deployment:
-1. GitHub Actions runs tests
-2. Builds static HTML in `dist/`
-3. Deploys to GitHub Pages
-4. Live at `standarddoors.github.io/wts-microsite/`
-
-**Custom domain:** Configure `wts.standarddoors.com` in Cloudflare to point to GitHub Pages.
 
 ## CI/CD
 
-**On pull request:**
-- Lint check (PHP_CodeSniffer)
-- Static analysis (PHPStan)
-- Unit tests (PHPUnit)
-- Build verification
-- HTML validation (PHPUnit structural checks + W3C Nu HTML Checker via Docker)
+**On pull request** — lint, static analysis, unit tests, build check, HTML validation.
 
-**On push to main:**
-- All checks above + deploy to GitHub Pages
+**On push to `main`** — same as above, then deploy to GitHub Pages. Live at `wts.standarddoors.com`.
 
-**Daily schedule:**
-- Rebuild at 7:00 UTC to update time-sensitive banners
-
-## URL Redirects
-
-Old `.php` URLs automatically redirect to `.html` via custom 404 page. Legacy bookmarks continue working:
-- `/wts-usa.php` → `/wts-usa.html`
-- `/wts-en.php` → `/wts-en.html`
-
-## How It Works
-
-The `build.php` script:
-1. Processes each `.php` file in `src/` through PHP
-2. Captures output as static `.html`
-3. Copies assets and creates 404 redirect page
-4. Outputs everything to `dist/`
-
-No PHP execution happens on the server—everything is pre-rendered.
+**Daily at 2:00 AM EST** — full rebuild and deploy so time-sensitive banners stay current.
 
 ## Requirements
 
 - PHP 8.1+ with `intl` extension
 - Composer
-- Docker (for running `validate-html` and `composer check` locally — used for W3C Nu HTML Checker)
+- Docker (required locally for `composer check` and `composer validate-html` — used for W3C Nu HTML Checker)
