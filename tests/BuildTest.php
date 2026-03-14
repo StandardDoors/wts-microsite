@@ -71,10 +71,16 @@ class BuildTest extends TestCase
         $sourceFiles = glob('src/*.php');
         $outputFiles = glob("{$this->testDistDir}/*.html");
 
+        // Exclude generated files that don't correspond to source pages
+        $generatedPages = array_filter(
+            $outputFiles,
+            fn($f) => basename($f) !== '404.html'
+        );
+
         $this->assertCount(
             count($sourceFiles),
-            $outputFiles,
-            'Number of output files does not match source files'
+            $generatedPages,
+            'Number of output pages does not match source files'
         );
     }
 

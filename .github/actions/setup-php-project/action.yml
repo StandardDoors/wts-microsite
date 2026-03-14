@@ -1,0 +1,48 @@
+name: Setup PHP Project
+description: Install PHP, cache Composer, and install dependencies
+
+inputs:
+  php-version:
+    description: PHP version to install
+    required: false
+    default: '8.5'
+  php-extensions:
+    description: Space-separated list of PHP extensions
+    required: false
+    default: ''
+  php-tools:
+    description: Comma-separated list of PHP tools
+    required: false
+    default: 'composer:v2'
+  composer-install-args:
+    description: Extra arguments for composer install
+    required: false
+    default: '--prefer-dist --no-progress'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup PHP
+      uses: shivammathur/setup-php@d59004228537ca90c8dca680592a08a675bf52b6 # v2
+      with:
+        php-version: ${{ inputs.php-version }}
+        tools: ${{ inputs.php-tools }}
+        extensions: ${{ inputs.php-extensions }}
+
+    - name: Get Composer cache directory
+      id: composer-cache
+      shell: bash
+      run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+    - name: Cache Composer dependencies
+      if: ${{ !env.ACT }}
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-composer-
+
+    - name: Install dependencies
+      shell: bash
+      run: composer install ${{ inputs.composer-install-args }}

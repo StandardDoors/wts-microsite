@@ -30,7 +30,8 @@ class HtmlValidationTest extends TestCase
     /**
      * Provide all .html files in dist/ as test cases.
      *
-     * Returns an empty array if dist/ doesn't exist, causing tests to be skipped.
+     * Returns a placeholder entry if dist/ doesn't exist so PHPUnit doesn't
+     * error on an empty data provider (it evaluates providers before group filters).
      *
      * @return array<string, array{string}>
      */
@@ -39,10 +40,15 @@ class HtmlValidationTest extends TestCase
         $distDir = self::DIST_DIR;
 
         if (!is_dir($distDir)) {
-            return [];
+            return ['no-build' => ['']];
         }
 
         $files = glob("{$distDir}/*.html") ?: [];
+
+        if (empty($files)) {
+            return ['no-files' => ['']];
+        }
+
         $result = [];
 
         foreach ($files as $file) {
@@ -185,10 +191,14 @@ class HtmlValidationTest extends TestCase
     }
 
     /**
-     * Read file contents, failing the test if the file is unreadable.
+     * Read file contents, skipping the test if dist/ hasn't been built.
      */
     private function readFile(string $file): string
     {
+        if ($file === '' || !file_exists($file)) {
+            $this->markTestSkipped('dist/ not built. Run "composer build" first.');
+        }
+
         $content = file_get_contents($file);
         $this->assertNotFalse($content, "Could not read {$file}");
         return $content;

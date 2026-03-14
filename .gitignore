@@ -4,7 +4,6 @@ dist-test/
 
 # Dependencies
 vendor/
-composer.lock
 
 # IDE
 .idea/

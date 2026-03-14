@@ -223,12 +223,14 @@ HTML;
     }
 }
 
-// Run the builder
-try {
-    $builder = new SiteBuilder();
-    $builder->build();
-    exit(0);
-} catch (Exception $e) {
-    echo "❌ Build failed: " . $e->getMessage() . "\n";
-    exit(1);
+// Only run when executed directly, not when included by tests
+if (realpath(__FILE__) === realpath($_SERVER['SCRIPT_FILENAME'] ?? '')) {
+    try {
+        $builder = new SiteBuilder();
+        $builder->build();
+        exit(0);
+    } catch (Exception $e) {
+        echo "❌ Build failed: " . $e->getMessage() . "\n";
+        exit(1);
+    }
 }
