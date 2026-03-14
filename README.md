@@ -19,7 +19,7 @@ composer build    # Generate static HTML in dist/
 - `src/*.php` — Source pages
 - `src/partials/` — Shared components (header, footer, logo, banners)
 - `src/Helpers/` — Utility classes (DateHelper, etc.)
-- `src/assets/` — CSS, images, logos
+- `src/assets/` — CSS, logos
 - `dist/` — Generated output (git-ignored)
 - `tests/` — PHPUnit tests
 
@@ -32,7 +32,7 @@ composer lint          # PSR-12 code style check
 composer lint:fix      # Auto-fix style issues
 composer analyse       # PHPStan static analysis (level 5)
 composer test          # Unit tests
-composer validate-html # Build + HTML validation (PHPUnit + W3C Nu Checker)
+composer validate-html # HTML structure validation (PHPUnit)
 composer check         # All of the above
 ```
 
@@ -46,6 +46,6 @@ composer check         # All of the above
 
 ## Requirements
 
-- PHP 8.1+ with `intl` extension
+- PHP 8.5+ with `intl` extension
 - Composer
-- Docker (required locally for `composer check` and `composer validate-html` — used for W3C Nu HTML Checker)
+- Docker (optional — only needed for `make ci` which runs the W3C Nu HTML Checker)
