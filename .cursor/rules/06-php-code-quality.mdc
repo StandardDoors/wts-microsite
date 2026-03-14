@@ -1,0 +1,176 @@
+---
+id: php_code_quality
+description: "PHP code quality tooling with PHP_CodeSniffer and PHPStan"
+---
+
+# PHP Code Quality
+
+Code quality tooling standards using PHP_CodeSniffer (PHPCS) and PHPStan.
+
+## PHP_CodeSniffer (PHPCS)
+
+### Configuration
+Configure via `phpcs.xml` in the project root:
+
+```xml
+<?xml version="1.0"?>
+<ruleset name="Project Name">
+    <description>Coding standards</description>
+
+    <!-- Scan targets -->
+    <file>src</file>
+    <file>tests</file>
+    <file>build.php</file>
+
+    <!-- Exclusions -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/dist/*</exclude-pattern>
+
+    <!-- PSR-12 base standard -->
+    <rule ref="PSR12"/>
+
+    <!-- Enforce short array syntax -->
+    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+
+    <!-- Line length -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="120"/>
+            <property name="absoluteLineLimit" value="0"/>
+        </properties>
+        <exclude-pattern>*/partials/*</exclude-pattern>
+    </rule>
+
+    <!-- Show progress and colors -->
+    <arg value="sp"/>
+    <arg name="colors"/>
+</ruleset>
+```
+
+### Key Rules
+- **Base standard**: PSR-12
+- **Short array syntax**: enforced via `Generic.Arrays.DisallowLongArraySyntax`
+- **Line length**: 120 soft limit, no hard limit (`absoluteLineLimit=0`)
+
+### Relaxations for Partials
+Partials contain mixed PHP/HTML and need relaxed rules:
+- **Exclude from line length checks** — HTML content often exceeds limits
+- **Exclude from `SideEffects` rule** — partials produce output by design
+- **Exclude from docblock requirements** — template fragments don't need full docblocks
+
+```xml
+<rule ref="PSR1.Files.SideEffects">
+    <exclude-pattern>*/partials/*</exclude-pattern>
+    <exclude-pattern>build.php</exclude-pattern>
+</rule>
+```
+
+### Relaxed Docblock Rules
+Keep docblock rules practical — require structure but don't enforce every tag:
+
+```xml
+<rule ref="Squiz.Commenting.FunctionComment">
+    <exclude name="Squiz.Commenting.FunctionComment.MissingParamTag"/>
+    <exclude name="Squiz.Commenting.FunctionComment.MissingReturn"/>
+    <exclude name="Squiz.Commenting.FunctionComment.Missing"/>
+    <exclude-pattern>*/partials/*</exclude-pattern>
+</rule>
+
+<rule ref="Squiz.Commenting.ClassComment">
+    <exclude name="Squiz.Commenting.ClassComment.Missing"/>
+</rule>
+
+<rule ref="Squiz.Commenting.FileComment">
+    <exclude name="Squiz.Commenting.FileComment.Missing"/>
+    <exclude name="Squiz.Commenting.FileComment.MissingPackageTag"/>
+</rule>
+```
+
+### Commands
+```bash
+# Check code style
+composer lint           # or: vendor/bin/phpcs
+
+# Auto-fix fixable issues
+composer lint:fix       # or: vendor/bin/phpcbf
+
+# CI: output as checkstyle for PR annotations
+vendor/bin/phpcs --report=checkstyle -q | cs2pr
+```
+
+## PHPStan
+
+### Configuration
+Configure via `phpstan.neon` in the project root:
+
+```neon
+parameters:
+    level: 5
+    paths:
+        - src
+        - tests
+        - build.php
+    excludePaths:
+        - vendor
+        - dist
+    bootstrapFiles:
+        - vendor/autoload.php
+    reportUnmatchedIgnoredErrors: false
+```
+
+### Key Settings
+- **Level 5** — good balance of strictness and practicality
+- **Bootstrap Composer autoloader** so PHPStan can resolve classes
+- **Exclude `vendor/` and `dist/`** from analysis
+- **`reportUnmatchedIgnoredErrors: false`** — don't fail when an ignored error no longer occurs
+
+### Ignoring Errors
+Use pattern-based ignores for intentional violations:
+
+```neon
+ignoreErrors:
+    -
+        message: '#Function [a-z_]+ has no return type specified#'
+        path: src/partials/*
+```
+
+### Commands
+```bash
+# Run analysis
+composer analyse        # or: vendor/bin/phpstan analyse
+
+# CI: GitHub-format output for PR annotations
+composer analyse -- --error-format=github
+```
+
+## Combined Quality Gate
+
+Define a `check` script in `composer.json` that runs everything:
+
+```json
+{
+    "check": ["@lint", "@analyse", "@test", "@validate-html"]
+}
+```
+
+Run it locally before pushing:
+
+```bash
+composer check
+```
+
+## Best Practices
+
+### ✅ DO:
+- **Use PSR-12** as the base PHPCS standard
+- **Set PHPStan to level 5+** — strict enough to catch real bugs
+- **Relax rules for partials/templates** — they have different concerns than application code
+- **Run both PHPCS and PHPStan in CI** as separate parallel jobs
+- **Use GitHub-native output formats** (`cs2pr`, `--error-format=github`) for PR annotations
+- **Keep a combined `check` script** for local pre-push validation
+
+### ❌ DON'T:
+- **Set `absoluteLineLimit`** — let developers exceed soft limits for HTML content
+- **Require docblocks on every function** — typed code is often self-documenting
+- **Ignore PHPStan errors globally** — use path-specific ignores
+- **Skip analysis on test files** — tests should follow the same standards as production code

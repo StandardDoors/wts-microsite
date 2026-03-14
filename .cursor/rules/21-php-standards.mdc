@@ -1,0 +1,108 @@
+---
+id: php_standards
+description: "Core PHP development standards and project conventions"
+---
+
+# PHP Standards Overview
+
+Core PHP development standards for consistent, maintainable code across projects.
+
+## PHP Version
+
+- **Minimum version**: PHP 8.5 (`"php": "^8.5"` in `composer.json`)
+- **CI default**: PHP 8.5 (latest stable)
+- **Always target the latest stable PHP release** in CI workflows and bump the minimum version accordingly
+- **Use modern PHP features**: typed properties, named arguments, union types, enums, fibers, `readonly`, `match` expressions
+- **Prefer `DateTimeImmutable`** over `DateTime` for safer date handling
+
+## Coding Standards
+
+### Style
+- **Follow PSR-12** as the base coding standard
+- **Enforce short array syntax** (`[]` not `array()`)
+- **Line length**: 120 characters soft limit, no hard limit
+- **Use strict types** where practical
+
+### Autoloading
+- **Follow PSR-4** for class autoloading
+- **Namespace convention**: top-level namespace maps to `src/`
+- **Dev namespace** maps to `tests/` via `autoload-dev`
+
+```json
+{
+    "autoload": {
+        "psr-4": {
+            "YourNamespace\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "YourNamespace\\Tests\\": "tests/"
+        }
+    }
+}
+```
+
+### Class and File Organization
+- One class per file
+- File name matches class name
+- Helpers and utilities go in a `Helpers/` subdirectory under `src/`
+- Partials (template fragments with side effects) go in `partials/` and are excluded from strict analysis rules
+
+### Error Handling
+- **Use typed exceptions** (`InvalidArgumentException`, domain-specific exceptions)
+- **Include contextual messages** in exception strings
+- **Use try/catch with specific exception types**, not bare `catch (\Exception $e)`
+
+```php
+if ($date === false) {
+    throw new InvalidArgumentException("Invalid date format: {$dateString}. Expected YYYY-MM-DD.");
+}
+```
+
+## Project Structure
+
+Standard PHP project layout:
+
+```
+project/
+├── src/                  # Application source code
+│   ├── Helpers/          # Utility classes
+│   └── partials/         # Template partials (HTML output)
+├── tests/                # PHPUnit test files
+├── dist/                 # Build output (generated, gitignored)
+├── vendor/               # Composer dependencies (gitignored)
+├── build.php             # Build script (if applicable)
+├── composer.json         # Dependency and script definitions
+├── composer.lock         # Locked dependency versions (committed)
+├── phpcs.xml             # PHP_CodeSniffer configuration
+├── phpstan.neon          # PHPStan configuration
+├── phpunit.xml           # PHPUnit configuration
+└── Makefile              # Developer convenience commands
+```
+
+## Quick Reference
+
+### Essential Commands
+```bash
+# Install dependencies
+composer install
+
+# Run all quality checks
+composer check
+
+# Individual checks
+composer lint          # Code style (PHPCS)
+composer analyse       # Static analysis (PHPStan)
+composer test          # Unit tests (PHPUnit)
+
+# Fix code style automatically
+composer lint:fix
+```
+
+## Related Rules
+
+- **Composer**: See `php-composer.md` for dependency management and script patterns
+- **GitHub Actions**: See `php-github-actions.md` for CI/CD PHP setup
+- **Testing**: See `php-testing.md` for PHPUnit standards
+- **Code Quality**: See `php-code-quality.md` for linting and static analysis
