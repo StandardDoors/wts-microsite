@@ -64,7 +64,7 @@ jobs:
         run: composer test
 
   test-urls:
-    name: URL Validation
+    name: Live URL Validation (main only)
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
 
