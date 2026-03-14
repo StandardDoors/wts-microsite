@@ -1,0 +1,118 @@
+---
+id: php_composer
+description: "Composer dependency management, script conventions, and CI integration"
+---
+
+# Composer Standards
+
+Composer dependency management patterns, script conventions, and CI integration.
+
+## composer.json Structure
+
+### Required Fields
+Every project must define:
+- `name` — vendor/package format
+- `description` — brief project summary
+- `type` — typically `project`
+- `require.php` — minimum PHP version constraint (currently `^8.5`)
+
+### Dependency Organization
+- **Runtime dependencies** in `require` — only what production code needs
+- **Dev dependencies** in `require-dev` — testing, linting, analysis tools
+- **Typical dev stack**:
+  - `phpunit/phpunit` — testing
+  - `squizlabs/php_codesniffer` — code style
+  - `phpstan/phpstan` — static analysis
+  - `guzzlehttp/guzzle` — HTTP client (if needed for tests or build)
+
+```json
+{
+    "require": {
+        "php": "^8.5"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0",
+        "squizlabs/php_codesniffer": "^3.7",
+        "phpstan/phpstan": "^1.10"
+    }
+}
+```
+
+## Composer Scripts
+
+### Script Conventions
+Define all project commands as Composer scripts so they are discoverable and consistent:
+
+```json
+{
+    "scripts": {
+        "build": "php build.php",
+        "serve": "php -S localhost:8000 -t src",
+        "test": ["@build", "vendor/bin/phpunit --exclude-group=html-validation,network"],
+        "test:html": "vendor/bin/phpunit --group=html-validation",
+        "test:network": "vendor/bin/phpunit --group=network",
+        "clean": "rm -rf dist",
+        "lint": "phpcs",
+        "lint:fix": "phpcbf",
+        "analyse": "phpstan analyse",
+        "check": ["@lint", "@analyse", "@test", "@validate-html"]
+    }
+}
+```
+
+### Script Patterns
+- **Use `@` references** to call other scripts (e.g. `@build`, `@lint`)
+- **Chain scripts as arrays** for multi-step commands (e.g. `"check"` runs lint → analyse → test → validate)
+- **Use `--` to pass extra args** from the CLI (e.g. `composer analyse -- --error-format=github`)
+- **Keep a `check` script** that runs the full quality gate locally
+
+### Makefile Wrapper
+Provide a `Makefile` as a convenience layer over Composer scripts with `help` as the default target:
+
+```makefile
+.DEFAULT_GOAL := help
+
+help: ## Show available commands
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+
+lint: ## Check code style (PSR-12 via PHP_CodeSniffer)
+	composer lint
+
+test: ## Build site and run unit tests
+	composer test
+
+check: ## Run all quality checks
+	composer check
+```
+
+## Lock File
+
+- **Always commit `composer.lock`** for applications and sites
+- This ensures reproducible builds across dev, CI, and production
+- Run `composer install` (not `composer update`) in CI to respect the lock file
+
+## CI Flags
+
+When installing in CI environments, use:
+
+```bash
+composer install --prefer-dist --no-progress
+```
+
+- `--prefer-dist` — downloads zip archives instead of cloning (faster)
+- `--no-progress` — suppresses download progress output (cleaner CI logs)
+
+## Best Practices
+
+### ✅ DO:
+- **Pin major versions** with caret (`^`) in version constraints
+- **Keep `composer.lock` committed** for reproducible installs
+- **Define all commands as Composer scripts** for discoverability
+- **Use `vendor/bin/` prefix** when calling tools in scripts
+- **Run `composer install`** in CI, not `composer update`
+
+### ❌ DON'T:
+- **Commit the `vendor/` directory** — always install from lock file
+- **Use `composer update` in CI** — this ignores the lock file
+- **Install dev dependencies in production** — use `--no-dev` flag
+- **Use global Composer installs** for project-specific tools

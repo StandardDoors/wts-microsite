@@ -331,307 +331,285 @@ Start each commit with one emoji:
 
 ---
 
-# Rule: 01-digitalocean-infrastructure.md
+# Rule: 01-local-server-error-monitoring.md
 
 ---
-id: digitalocean_infrastructure
-description: "DigitalOcean infrastructure management and scalability best practices"
+id: local_server_error_monitoring
+description: "Automatically extract, format, and present local development server errors for easy debugging"
 ---
 
-# DigitalOcean Infrastructure Management
+# Local Server Error Monitoring
 
-Manage DigitalOcean infrastructure for uptime, maintainability, and predictable performance.
+When users run local development servers (http-server, Vite, Astro, Netlify dev, etc.), automatically monitor output for errors and present them in a clear, actionable format.
+
+## When to Monitor
+
+Trigger on server output containing:
+- HTTP 404/500 errors
+- Build/compilation errors
+- Asset loading failures
+- CORS errors
+- Port conflicts
+- Module resolution errors
+
+## Error Presentation Format
+
+### Summary First
+
+```
+🔍 Server Issues Detected:
+- 3 × 404 errors (missing assets)
+- 1 × favicon missing
+```
+
+### Detailed Breakdown
+
+List each unique error with type, affected resource, frequency, and suggested fix:
+
+```
+📁 Missing Assets (404):
+  → /assets/style.css
+  → /assets/logos/logo.png
+
+  Likely cause: Build output path mismatch
+  Check: Does `dist/assets/` contain these files?
+```
+
+## Common Error Patterns
+
+### 404 Errors
+- Verify file exists in build output
+- Check asset path configuration
+- Verify build process completed successfully
+
+### Asset Path Issues
+Common causes:
+1. Build output path configured incorrectly
+2. Assets not copied during build
+3. Base URL path mismatch
+
+Quick checks: `ls -la dist/assets/` and review build config (vite.config.js, astro.config.mjs, etc.)
+
+### Port Conflicts
+Quick fixes:
+- Kill process: `lsof -ti:XXXX | xargs kill`
+- Use different port: `--port 3001`
+- Check for zombie processes: `ps aux | grep node`
+
+### Build Errors
+Present with: affected file, line number (if available), and specific fix based on error type.
 
 ## ✅ DO
 
-### Monitoring & Alerts
-- **Enable DigitalOcean Monitoring** on all Droplets
-- **Set CPU, memory, and disk usage alerts** via email or Slack
-- **Use floating IPs** for quick failover and blue/green deployments
-
-### Backups & Recovery
-- **Enable automatic weekly backups** on all production Droplets
-- **Create manual snapshots** before any major change or deployment
-- **Maintain documented restore procedures**
-- **Test snapshot recovery** on staging environments regularly
-
-### Scalability & Architecture
-- **Use load balancers** to distribute traffic for production workloads
-- **Prefer managed services** (Managed Databases, DO Kubernetes) over self-managed instances
-- **Use DO Projects** or namespaces to isolate experiments from production
-- **Auto-tag Droplets and Spaces** by project + environment
-
-### Networking
-- **Enforce private networking** between Droplets where applicable
-- **Restrict SSH access** to known IPs using firewalls or VPC
-- **Use VPCs** for network isolation between environments
+- **Automatically scan** server output for error patterns
+- **Group similar errors** to reduce noise
+- **Provide actionable suggestions** for each error type
+- **Show file paths** relative to project root
+- **Count repeated errors** to highlight frequency
 
 ## ❌ DON'T
 
-### Anti-patterns
-- Don't rely on single Droplets for production workloads without backup plans
-- Don't skip backup verification - test restore procedures
-- Don't mix production and development resources in same project
-- Don't ignore resource monitoring - set up alerts before problems occur
+- Don't show raw log output without processing
+- Don't present errors without context or suggestions
+- Don't ignore patterns that indicate common misconfigurations
+- Don't skip verification steps that could clarify root cause
 
-### Scaling Mistakes
-- Don't manually scale without load balancers in place
-- Don't use unmanaged services when managed alternatives exist
-- Don't forget to tag resources for organization and billing tracking
+## Server-Specific Patterns
 
-## Implementation Examples
+**http-server**: 404 errors, missing files, CORS issues
+**Vite/Astro**: Module resolution errors, hot reload failures, asset transformation issues
+**Netlify Dev**: Function errors, redirect/rewrite issues, environment variable problems
 
-### Basic Monitoring Setup
-```bash
-# Enable monitoring via doctl CLI
-doctl compute droplet enable-monitoring DROPLET_ID
+## Proactive Debugging
 
-# Set up basic firewall rules
-doctl compute firewall create --name "web-firewall" \
-  --inbound-rules "protocol:tcp,ports:80,source_addresses:0.0.0.0/0,::0/0" \
-  --inbound-rules "protocol:tcp,ports:443,source_addresses:0.0.0.0/0,::0/0" \
-  --inbound-rules "protocol:tcp,ports:22,source_addresses:YOUR_IP/32"
-```
+After detecting errors, offer to:
+1. Check build output — verify files exist where expected
+2. Review configuration — check relevant config files
+3. Compare paths — match requested paths to actual file structure
+4. Suggest fixes — based on common patterns and project type
 
-### Backup Automation
-```bash
-# Create snapshot before deployment
-doctl compute droplet-action snapshot DROPLET_ID --snapshot-name "pre-deploy-$(date +%Y%m%d)"
-
-# List recent snapshots
-doctl compute snapshot list --resource droplet
-```
-
-This approach ensures reliable, scalable DigitalOcean infrastructure that can handle production workloads.
 
 ---
 
-# Rule: 01-python-code-style.md
+# Rule: 01-php-code-quality.md
 
 ---
-id: python_code_style
-description: "Python code style, formatting, and naming conventions following PEP 8"
+id: php_code_quality
+description: "PHP code quality tooling with PHP_CodeSniffer and PHPStan"
 ---
 
-# Python Code Style and Formatting
+# PHP Code Quality
 
-Python code style, formatting, and naming conventions following PEP 8 and modern Python development practices.
+Code quality tooling standards using PHP_CodeSniffer (PHPCS) and PHPStan.
 
-## Basic Formatting
+## PHP_CodeSniffer (PHPCS)
 
-### Indentation and Line Length
-- **Use 4 spaces** for indentation (no tabs)
-- **Maximum line length** of 88 characters (Black formatter style)
-- **Use parentheses** for line continuation when needed
-- **Add trailing comma** after last item in multi-line collections
+### Configuration
+Configure via `phpcs.xml` in the project root:
 
-### String Formatting
-- **Use double quotes** for strings consistently
-- **Use f-strings** for string interpolation (Python 3.6+)
-- **Use triple double quotes** for docstrings
+```xml
+<?xml version="1.0"?>
+<ruleset name="Project Name">
+    <description>Coding standards</description>
 
-```python
-# Good string formatting
-name = "John Doe"
-message = f"Hello, {name}!"
-items = [
-    "apple",
-    "banana",
-    "cherry",  # Trailing comma
-]
+    <!-- Scan targets -->
+    <file>src</file>
+    <file>tests</file>
+    <file>build.php</file>
+
+    <!-- Exclusions -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/dist/*</exclude-pattern>
+
+    <!-- PSR-12 base standard -->
+    <rule ref="PSR12"/>
+
+    <!-- Enforce short array syntax -->
+    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+
+    <!-- Line length -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="120"/>
+            <property name="absoluteLineLimit" value="0"/>
+        </properties>
+        <exclude-pattern>*/partials/*</exclude-pattern>
+    </rule>
+
+    <!-- Show progress and colors -->
+    <arg value="sp"/>
+    <arg name="colors"/>
+</ruleset>
 ```
 
-## Naming Conventions
+### Key Rules
+- **Base standard**: PSR-12
+- **Short array syntax**: enforced via `Generic.Arrays.DisallowLongArraySyntax`
+- **Line length**: 120 soft limit, no hard limit (`absoluteLineLimit=0`)
 
-### Variable and Function Names
-- **Functions and variables**: `snake_case`
-- **Constants**: `UPPER_CASE`
-- **Classes**: `PascalCase`
-- **Modules**: `lowercase` or `lower_with_underscores`
+### Relaxations for Partials
+Partials contain mixed PHP/HTML and need relaxed rules:
+- **Exclude from line length checks** — HTML content often exceeds limits
+- **Exclude from `SideEffects` rule** — partials produce output by design
+- **Exclude from docblock requirements** — template fragments don't need full docblocks
 
-### Access Modifiers
-- **Public**: `public_method()`
-- **Internal use**: `_single_leading_underscore`
-- **Name mangling**: `__double_leading_underscore`
-- **Special methods**: `__dunder_methods__`
-
-```python
-# Good naming examples
-user_count = 42
-MAX_RETRIES = 3
-DEFAULT_TIMEOUT = 30
-
-class UserManager:
-    """Manages user operations."""
-    
-    def get_active_users(self):
-        """Public method to get active users."""
-        return self._fetch_users()
-    
-    def _fetch_users(self):
-        """Internal method to fetch users from database."""
-        return self.__query_database()
-    
-    def __query_database(self):
-        """Private method for database operations."""
-        pass
+```xml
+<rule ref="PSR1.Files.SideEffects">
+    <exclude-pattern>*/partials/*</exclude-pattern>
+    <exclude-pattern>build.php</exclude-pattern>
+</rule>
 ```
 
-## Import Organization
+### Relaxed Docblock Rules
+Keep docblock rules practical — require structure but don't enforce every tag:
 
-### Import Grouping
-**Group imports in this order:**
-1. Standard library imports
-2. Related third-party library imports  
-3. Local application/library imports
+```xml
+<rule ref="Squiz.Commenting.FunctionComment">
+    <exclude name="Squiz.Commenting.FunctionComment.MissingParamTag"/>
+    <exclude name="Squiz.Commenting.FunctionComment.MissingReturn"/>
+    <exclude name="Squiz.Commenting.FunctionComment.Missing"/>
+    <exclude-pattern>*/partials/*</exclude-pattern>
+</rule>
 
-**Sort alphabetically within each group and separate groups with blank lines:**
+<rule ref="Squiz.Commenting.ClassComment">
+    <exclude name="Squiz.Commenting.ClassComment.Missing"/>
+</rule>
 
-```python
-# Standard library
-import os
-import sys
-from pathlib import Path
-from typing import Dict, List, Optional
-
-# Third-party
-import requests
-from django.conf import settings
-from sqlalchemy import create_engine
-
-# Local application
-from .models import User
-from .utils import helper_function
-from ..services import external_service
+<rule ref="Squiz.Commenting.FileComment">
+    <exclude name="Squiz.Commenting.FileComment.Missing"/>
+    <exclude name="Squiz.Commenting.FileComment.MissingPackageTag"/>
+</rule>
 ```
 
-### Import Best Practices
-- **Use absolute imports** when possible
-- **Avoid wildcard imports** (`from module import *`)
-- **Use explicit imports** for better readability
-- **Import modules, not individual functions** when importing many items
-
-```python
-# ✅ Good
-import json
-from typing import List, Dict, Optional
-
-# ❌ Avoid
-from json import *
-from some_module import func1, func2, func3, func4, func5
-```
-
-## Code Organization
-
-### Function Organization
-- **Keep functions small** and focused on single responsibility
-- **Use descriptive names** that clearly indicate purpose
-- **Order functions logically** - public methods first, then private
-
-### Class Organization
-```python
-class ExampleClass:
-    """Class-level docstring."""
-    
-    # Class variables
-    CLASS_CONSTANT = "value"
-    
-    def __init__(self, param):
-        """Initialize instance."""
-        self.instance_var = param
-        self._private_var = None
-    
-    # Public methods
-    def public_method(self):
-        """Public interface method."""
-        return self._helper_method()
-    
-    # Private methods
-    def _helper_method(self):
-        """Internal helper method."""
-        pass
-    
-    # Special methods
-    def __str__(self):
-        """String representation."""
-        return f"ExampleClass({self.instance_var})"
-```
-
-## Formatting Tools Integration
-
-### Black Formatter
+### Commands
 ```bash
-# Install Black
-pip install black
+# Check code style
+composer lint           # or: vendor/bin/phpcs
 
-# Format code
-black src/
+# Auto-fix fixable issues
+composer lint:fix       # or: vendor/bin/phpcbf
 
-# Check what would be formatted
-black --check src/
-
-# Configuration in pyproject.toml
-[tool.black]
-line-length = 88
-target-version = ['py39']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  migrations/
-  | \.git
-  | \.venv
-)/
-'''
+# CI: output as checkstyle for PR annotations
+vendor/bin/phpcs --report=checkstyle -q | cs2pr
 ```
 
-### Other Formatting Tools
+## PHPStan
+
+### Configuration
+Configure via `phpstan.neon` in the project root:
+
+```neon
+parameters:
+    level: 5
+    paths:
+        - src
+        - tests
+        - build.php
+    excludePaths:
+        - vendor
+        - dist
+    bootstrapFiles:
+        - vendor/autoload.php
+    reportUnmatchedIgnoredErrors: false
+```
+
+### Key Settings
+- **Level 5** — good balance of strictness and practicality
+- **Bootstrap Composer autoloader** so PHPStan can resolve classes
+- **Exclude `vendor/` and `dist/`** from analysis
+- **`reportUnmatchedIgnoredErrors: false`** — don't fail when an ignored error no longer occurs
+
+### Ignoring Errors
+Use pattern-based ignores for intentional violations:
+
+```neon
+ignoreErrors:
+    -
+        message: '#Function [a-z_]+ has no return type specified#'
+        path: src/partials/*
+```
+
+### Commands
 ```bash
-# isort for import organization
-pip install isort
-isort src/
+# Run analysis
+composer analyse        # or: vendor/bin/phpstan analyse
 
-# autopep8 for PEP 8 compliance
-pip install autopep8
-autopep8 --in-place --recursive src/
+# CI: GitHub-format output for PR annotations
+composer analyse -- --error-format=github
 ```
 
-## Configuration Files
+## Combined Quality Gate
 
-### pyproject.toml Example
-```toml
-[tool.black]
-line-length = 88
-target-version = ['py39']
+Define a `check` script in `composer.json` that runs everything:
 
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-line_length = 88
-known_first_party = ["myproject"]
+```json
+{
+    "check": ["@lint", "@analyse", "@test", "@validate-html"]
+}
+```
 
-[tool.flake8]
-max-line-length = 88
-extend-ignore = ["E203", "W503"]
+Run it locally before pushing:
+
+```bash
+composer check
 ```
 
 ## Best Practices
 
 ### ✅ DO:
-- **Follow PEP 8** for style consistency
-- **Use automated formatters** like Black to maintain consistency
-- **Be consistent** within a project - establish team standards
-- **Use meaningful names** that describe purpose, not implementation
-- **Keep line length reasonable** for readability on different screen sizes
-- **Use blank lines** to separate logical sections
+- **Use PSR-12** as the base PHPCS standard
+- **Set PHPStan to level 5+** — strict enough to catch real bugs
+- **Relax rules for partials/templates** — they have different concerns than application code
+- **Run both PHPCS and PHPStan in CI** as separate parallel jobs
+- **Use GitHub-native output formats** (`cs2pr`, `--error-format=github`) for PR annotations
+- **Keep a combined `check` script** for local pre-push validation
 
 ### ❌ DON'T:
-- **Mix tabs and spaces** - use only spaces
-- **Use single-letter variable names** except for short loops
-- **Write overly long lines** that require horizontal scrolling
-- **Use inconsistent naming** within the same codebase
-- **Skip the formatter** - automate style consistency
+- **Set `absoluteLineLimit`** — let developers exceed soft limits for HTML content
+- **Require docblocks on every function** — typed code is often self-documenting
+- **Ignore PHPStan errors globally** — use path-specific ignores
+- **Skip analysis on test files** — tests should follow the same standards as production code
 
-**Remember: Consistent code style makes code easier to read, maintain, and collaborate on. Use automated tools to enforce consistency across your team.**
 
 ---
 
@@ -1164,569 +1142,216 @@ This approach creates predictable, efficient workflows that scale across differe
 
 ---
 
-# Rule: 02-digitalocean-observability.md
+# Rule: 02-php-composer.md
 
 ---
-id: digitalocean_observability
-description: "DigitalOcean logging, monitoring, and observability best practices"
+id: php_composer
+description: "Composer dependency management, script conventions, and CI integration"
 ---
 
-# DigitalOcean Observability
+# Composer Standards
 
-Implement comprehensive observability for DigitalOcean infrastructure to ensure reliability and enable proactive problem resolution.
+Composer dependency management patterns, script conventions, and CI integration.
 
-## ✅ DO
+## composer.json Structure
 
-### Logging
-- **Centralize logs** using DO Spaces, Papertrail, ELK stack, or similar
-- **Tag logs with environment and version metadata** for easy filtering
-- **Structure logs in JSON format** when possible for better parsing
-- **Set up log rotation** to prevent disk space issues
-- **Archive logs regularly** for compliance and historical analysis
+### Required Fields
+Every project must define:
+- `name` — vendor/package format
+- `description` — brief project summary
+- `type` — typically `project`
+- `require.php` — minimum PHP version constraint (currently `^8.5`)
 
-### Health Checks & Monitoring
-- **Expose `/health` endpoints** for all services
-- **Implement readiness and liveness checks** for containerized applications
-- **Set up external monitoring** (UptimeRobot, Pingdom) for critical services
-- **Monitor key metrics**: CPU, memory, disk usage, network I/O
-- **Create custom dashboards** for application-specific metrics
+### Dependency Organization
+- **Runtime dependencies** in `require` — only what production code needs
+- **Dev dependencies** in `require-dev` — testing, linting, analysis tools
+- **Typical dev stack**:
+  - `phpunit/phpunit` — testing
+  - `squizlabs/php_codesniffer` — code style
+  - `phpstan/phpstan` — static analysis
+  - `guzzlehttp/guzzle` — HTTP client (if needed for tests or build)
 
-### Alerting
-- **Configure alerting thresholds** based on historical data and SLAs
-- **Set up escalation policies** for different severity levels
-- **Use multiple notification channels** (email, Slack, PagerDuty)
-- **Implement alert fatigue prevention** with proper grouping and suppression
-
-### Performance Monitoring
-- **Track response times** and error rates for all endpoints
-- **Monitor database performance** including slow queries and connections
-- **Set up APM tools** (New Relic, DataDog) for application insights
-- **Monitor resource utilization trends** to predict scaling needs
-
-## ❌ DON'T
-
-### Logging Mistakes
-- Don't store logs only locally without backup or centralization
-- Don't log sensitive information (passwords, tokens, PII)
-- Don't ignore log rotation - prevent disk space exhaustion
-- Don't use inconsistent log formats across services
-
-### Monitoring Anti-patterns
-- Don't rely solely on internal monitoring without external checks
-- Don't set up alerts without clear ownership and response procedures
-- Don't monitor everything - focus on business-critical metrics
-- Don't ignore baseline establishment for meaningful alerting
-
-### Performance Monitoring Issues
-- Don't monitor only infrastructure metrics - include application metrics
-- Don't set alert thresholds without understanding normal behavior patterns
-- Don't forget to monitor batch jobs and background processes
-- Don't overlook user experience metrics (page load times, error rates)
-
-## Implementation Examples
-
-### Centralized Logging Setup
-```bash path=null start=null
-# Configure rsyslog to send to external service
-echo "*.* @@logs.papertrailapp.com:XXXXX" >> /etc/rsyslog.conf
-systemctl restart rsyslog
-
-# Docker logging driver for centralized logs
-docker run -d --log-driver=syslog --log-opt syslog-address=udp://logs.papertrailapp.com:XXXXX app
-```
-
-### Health Check Implementation
-```python path=null start=null
-# Flask health check endpoint
-@app.route('/health')
-def health_check():
-    checks = {
-        'database': check_database_connection(),
-        'redis': check_redis_connection(),
-        'external_api': check_external_services()
+```json
+{
+    "require": {
+        "php": "^8.5"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0",
+        "squizlabs/php_codesniffer": "^3.7",
+        "phpstan/phpstan": "^1.10"
     }
-    
-    if all(checks.values()):
-        return jsonify({'status': 'healthy', 'checks': checks}), 200
-    else:
-        return jsonify({'status': 'unhealthy', 'checks': checks}), 503
+}
 ```
 
-### Monitoring Script
-```bash path=null start=null
-#!/bin/bash
-# Basic monitoring script for cron
-SERVICE_URL="https://your-app.com/health"
-LOG_FILE="/var/log/health-check.log"
+## Composer Scripts
 
-RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $SERVICE_URL)
-TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+### Script Conventions
+Define all project commands as Composer scripts so they are discoverable and consistent:
 
-if [ $RESPONSE -ne 200 ]; then
-    echo "$TIMESTAMP - Health check failed: HTTP $RESPONSE" >> $LOG_FILE
-    # Send alert notification
-    curl -X POST -H 'Content-type: application/json' \
-        --data '{"text":"Service health check failed"}' \
-        $SLACK_WEBHOOK_URL
-fi
+```json
+{
+    "scripts": {
+        "build": "php build.php",
+        "serve": "php -S localhost:8000 -t src",
+        "test": ["@build", "vendor/bin/phpunit --exclude-group=html-validation,network"],
+        "test:html": "vendor/bin/phpunit --group=html-validation",
+        "test:network": "vendor/bin/phpunit --group=network",
+        "clean": "rm -rf dist",
+        "lint": "phpcs",
+        "lint:fix": "phpcbf",
+        "analyse": "phpstan analyse",
+        "check": ["@lint", "@analyse", "@test", "@validate-html"]
+    }
+}
 ```
 
-### Custom Metrics Collection
-```bash path=null start=null
-# Send custom metrics to DigitalOcean Monitoring
-curl -X POST "https://api.digitalocean.com/v2/monitoring/metrics" \
-  -H "Authorization: Bearer $DO_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "data": [{
-      "name": "custom.app.active_users",
-      "value": 150,
-      "timestamp": 1609459200,
-      "tags": {
-        "environment": "production",
-        "service": "web-app"
-      }
-    }]
-  }'
+### Script Patterns
+- **Use `@` references** to call other scripts (e.g. `@build`, `@lint`)
+- **Chain scripts as arrays** for multi-step commands (e.g. `"check"` runs lint → analyse → test → validate)
+- **Use `--` to pass extra args** from the CLI (e.g. `composer analyse -- --error-format=github`)
+- **Keep a `check` script** that runs the full quality gate locally
+
+### Makefile Wrapper
+Provide a `Makefile` as a convenience layer over Composer scripts with `help` as the default target:
+
+```makefile
+.DEFAULT_GOAL := help
+
+help: ## Show available commands
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+
+lint: ## Check code style (PSR-12 via PHP_CodeSniffer)
+	composer lint
+
+test: ## Build site and run unit tests
+	composer test
+
+check: ## Run all quality checks
+	composer check
 ```
 
-## Monitoring Stack Example
+## Lock File
 
-### Basic Stack Components
-- **DigitalOcean Monitoring**: Built-in infrastructure metrics
-- **Papertrail**: Centralized log management
-- **UptimeRobot**: External uptime monitoring
-- **Grafana + Prometheus**: Custom dashboards and metrics
+- **Always commit `composer.lock`** for applications and sites
+- This ensures reproducible builds across dev, CI, and production
+- Run `composer install` (not `composer update`) in CI to respect the lock file
 
-### Advanced Stack Components  
-- **DataDog or New Relic**: APM and detailed application monitoring
-- **PagerDuty**: Alert management and escalation
-- **Sentry**: Error tracking and performance monitoring
-- **DO Spaces**: Long-term log and metric storage
+## CI Flags
 
-## Observability Checklist
+When installing in CI environments, use:
 
-### Initial Setup
-- [ ] Log centralization configured
-- [ ] Health checks implemented for all services
-- [ ] Basic monitoring alerts set up
-- [ ] External uptime monitoring configured
-- [ ] Dashboard created for key metrics
-
-### Ongoing Operations
-- [ ] Log retention policies implemented
-- [ ] Alert thresholds reviewed and tuned monthly
-- [ ] Dashboards updated with new services
-- [ ] Monitoring coverage assessed quarterly
-- [ ] Incident response procedures documented
-
-This comprehensive observability approach ensures you can detect, diagnose, and resolve issues quickly while maintaining system reliability.
-
----
-
-# Rule: 02-python-documentation.md
-
----
-id: python_documentation
-description: "Python documentation standards using docstrings and type hints for better code maintainability"
----
-
-# Python Documentation and Type Hints
-
-Python documentation standards using docstrings and type hints for better code maintainability.
-
-## Docstring Standards
-
-### Google-Style Docstrings
-Use Google-style docstrings for all public functions, classes, and modules:
-
-```python
-def process_user_data(user_id: int, include_metadata: bool = False) -> dict:
-    """Process user data and return formatted result.
-
-    This function retrieves user data from the database, processes it
-    according to business rules, and returns a standardized format.
-
-    Args:
-        user_id: The unique identifier for the user
-        include_metadata: Whether to include additional metadata in the result
-
-    Returns:
-        Dictionary containing processed user data with the following structure:
-        {
-            'id': int,
-            'name': str,
-            'email': str,
-            'metadata': dict (optional)
-        }
-
-    Raises:
-        ValidationError: If user_id is invalid or not found
-        APIError: If external API call fails
-        DatabaseError: If database query fails
-
-    Example:
-        >>> data = process_user_data(123, include_metadata=True)
-        >>> print(data['name'])
-        'John Doe'
-        >>> print('metadata' in data)
-        True
-    """
-    pass
-```
-
-### Class Documentation
-```python
-class UserManager:
-    """Manages user operations including CRUD and authentication.
-    
-    This class provides a high-level interface for user management
-    operations, handling database interactions, validation, and
-    business logic.
-    
-    Attributes:
-        database: Database connection instance
-        cache_enabled: Whether caching is enabled for operations
-        default_permissions: Default permissions for new users
-    
-    Example:
-        >>> manager = UserManager(database=db, cache_enabled=True)
-        >>> user = manager.create_user('john@example.com', 'password')
-        >>> manager.activate_user(user.id)
-    """
-    
-    def __init__(self, database, cache_enabled: bool = True):
-        """Initialize UserManager with database connection.
-        
-        Args:
-            database: Database connection instance
-            cache_enabled: Whether to enable caching for operations
-        """
-        self.database = database
-        self.cache_enabled = cache_enabled
-        self.default_permissions = ['read']
-    
-    def create_user(self, email: str, password: str) -> User:
-        """Create a new user account.
-        
-        Args:
-            email: User's email address (must be valid format)
-            password: User's password (must meet security requirements)
-            
-        Returns:
-            User instance for the newly created user
-            
-        Raises:
-            ValidationError: If email format is invalid or password is weak
-            DatabaseError: If user creation fails
-        """
-        pass
-```
-
-### Module Documentation
-```python
-"""User management utilities and classes.
-
-This module provides comprehensive user management functionality including
-user creation, authentication, permissions, and profile management.
-
-Classes:
-    UserManager: Main interface for user operations
-    User: User data model with validation
-    UserPermissions: Permission management for users
-
-Functions:
-    validate_email: Email format validation
-    hash_password: Secure password hashing
-    generate_token: Authentication token generation
-
-Example:
-    >>> from user_management import UserManager
-    >>> manager = UserManager(database=db)
-    >>> user = manager.create_user('john@example.com', 'secure_password')
-"""
-```
-
-## Type Hints Best Practices
-
-### Basic Type Annotations
-```python
-from typing import List, Dict, Optional, Union, Any, Tuple
-from pathlib import Path
-
-# Basic types
-def calculate_total(prices: List[float]) -> float:
-    """Calculate total of all prices."""
-    return sum(prices)
-
-def get_user_data(user_id: int) -> Dict[str, Any]:
-    """Get user data as dictionary."""
-    pass
-
-def find_user(email: str) -> Optional[User]:
-    """Find user by email, return None if not found."""
-    pass
-
-# Union types for multiple possibilities
-def process_data(value: Union[str, int, float]) -> str:
-    """Process data that can be string, int, or float."""
-    return str(value)
-
-# Modern Python 3.10+ union syntax
-def process_data_modern(value: str | int | float) -> str:
-    """Process data using modern union syntax."""
-    return str(value)
-```
-
-### Complex Type Annotations
-```python
-from typing import Dict, List, Optional, Callable, TypeVar, Generic
-from dataclasses import dataclass
-from enum import Enum
-
-# Type variables for generic functions
-T = TypeVar('T')
-K = TypeVar('K')
-V = TypeVar('V')
-
-def get_first_item(items: List[T]) -> Optional[T]:
-    """Get first item from list or None if empty."""
-    return items[0] if items else None
-
-# Callable type hints
-def apply_filter(
-    items: List[T], 
-    filter_func: Callable[[T], bool]
-) -> List[T]:
-    """Apply filter function to list of items."""
-    return [item for item in items if filter_func(item)]
-
-# Complex nested structures
-UserData = Dict[str, Union[str, int, List[str]]]
-ApiResponse = Dict[str, Union[str, int, List[UserData]]]
-
-def process_api_response(response: ApiResponse) -> List[UserData]:
-    """Process API response and extract user data."""
-    pass
-```
-
-### Using dataclasses with Type Hints
-```python
-from dataclasses import dataclass, field
-from datetime import datetime
-from typing import List, Optional
-
-@dataclass
-class User:
-    """User data model with validation.
-    
-    Attributes:
-        id: Unique user identifier
-        email: User's email address
-        name: User's full name
-        created_at: Account creation timestamp
-        permissions: List of user permissions
-        metadata: Additional user metadata
-    """
-    id: int
-    email: str
-    name: str
-    created_at: datetime = field(default_factory=datetime.now)
-    permissions: List[str] = field(default_factory=list)
-    metadata: Optional[Dict[str, Any]] = None
-    
-    def __post_init__(self):
-        """Validate user data after initialization."""
-        if not self.email or '@' not in self.email:
-            raise ValidationError("Invalid email format")
-        
-        if not self.name.strip():
-            raise ValidationError("Name cannot be empty")
-
-@dataclass
-class UserPreferences:
-    """User preference settings."""
-    theme: str = "light"
-    language: str = "en"
-    notifications_enabled: bool = True
-    email_frequency: str = "daily"
-```
-
-### Protocol and Abstract Base Classes
-```python
-from typing import Protocol
-from abc import ABC, abstractmethod
-
-class Serializable(Protocol):
-    """Protocol for objects that can be serialized."""
-    
-    def serialize(self) -> Dict[str, Any]:
-        """Serialize object to dictionary."""
-        ...
-    
-    @classmethod
-    def deserialize(cls, data: Dict[str, Any]) -> 'Serializable':
-        """Create object from dictionary data."""
-        ...
-
-class DataProcessor(ABC):
-    """Abstract base class for data processors."""
-    
-    @abstractmethod
-    def process(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        """Process data and return result."""
-        pass
-    
-    def validate_input(self, data: Dict[str, Any]) -> bool:
-        """Validate input data format."""
-        return isinstance(data, dict) and len(data) > 0
-```
-
-## Documentation Best Practices
-
-### Function Documentation Guidelines
-```python
-def analyze_user_behavior(
-    user_id: int,
-    start_date: datetime,
-    end_date: datetime,
-    include_sessions: bool = True,
-    metrics: Optional[List[str]] = None
-) -> Dict[str, Any]:
-    """Analyze user behavior patterns within a date range.
-    
-    Processes user activity data to identify patterns, trends, and insights
-    about user engagement and behavior. Optionally includes session data
-    and specific metrics.
-    
-    Args:
-        user_id: Unique identifier for the user to analyze
-        start_date: Beginning of the analysis period (inclusive)
-        end_date: End of the analysis period (inclusive)
-        include_sessions: Whether to include detailed session data in analysis
-        metrics: Specific metrics to calculate. If None, calculates all
-                available metrics. Available options: ['engagement', 'retention',
-                'conversion', 'activity_score']
-    
-    Returns:
-        Analysis results containing:
-        - 'summary': Dict with high-level statistics
-        - 'trends': List of identified behavioral trends
-        - 'sessions': List of session data (if include_sessions=True)
-        - 'metrics': Dict of calculated metrics
-        - 'period': Analysis period information
-    
-    Raises:
-        ValidationError: If user_id is invalid or dates are malformed
-        DataNotFoundError: If no data exists for the specified period
-        CalculationError: If metric calculations fail
-    
-    Example:
-        >>> from datetime import datetime
-        >>> start = datetime(2024, 1, 1)
-        >>> end = datetime(2024, 1, 31)
-        >>> result = analyze_user_behavior(
-        ...     user_id=123,
-        ...     start_date=start,
-        ...     end_date=end,
-        ...     metrics=['engagement', 'retention']
-        ... )
-        >>> print(result['summary']['total_sessions'])
-        45
-    """
-    pass
-```
-
-### Error Documentation
-```python
-class ValidationError(Exception):
-    """Raised when data validation fails.
-    
-    This exception is raised when input data doesn't meet the required
-    format, constraints, or business rules.
-    
-    Attributes:
-        message: Human-readable error description
-        field: The field that failed validation (optional)
-        value: The invalid value that caused the error (optional)
-        error_code: Machine-readable error code for API responses
-    
-    Example:
-        >>> raise ValidationError(
-        ...     "Email must contain @ symbol",
-        ...     field="email",
-        ...     value="invalid-email",
-        ...     error_code="INVALID_EMAIL_FORMAT"
-        ... )
-    """
-    
-    def __init__(
-        self,
-        message: str,
-        field: Optional[str] = None,
-        value: Any = None,
-        error_code: Optional[str] = None
-    ):
-        self.field = field
-        self.value = value
-        self.error_code = error_code
-        super().__init__(message)
-```
-
-## Tools and Configuration
-
-### mypy Configuration
-```ini
-# mypy.ini
-[mypy]
-python_version = 3.9
-warn_return_any = True
-warn_unused_configs = True
-disallow_untyped_defs = True
-disallow_incomplete_defs = True
-check_untyped_defs = True
-disallow_untyped_decorators = True
-
-# Per-module options
-[mypy-requests.*]
-ignore_missing_imports = True
-
-[mypy-pandas.*]
-ignore_missing_imports = True
-```
-
-### Type Checking Commands
 ```bash
-# Run type checking
-mypy src/
-
-# Type check specific files
-mypy src/user_management.py src/api_client.py
-
-# Generate type coverage report
-mypy --html-report mypy-report src/
+composer install --prefer-dist --no-progress
 ```
+
+- `--prefer-dist` — downloads zip archives instead of cloning (faster)
+- `--no-progress` — suppresses download progress output (cleaner CI logs)
 
 ## Best Practices
 
 ### ✅ DO:
-- **Document all public APIs** with comprehensive docstrings
-- **Use type hints consistently** across your codebase
-- **Include usage examples** in docstrings for complex functions
-- **Document exceptions** that functions can raise
-- **Keep docstrings up to date** when changing function behavior
-- **Use meaningful parameter names** that are self-documenting
-- **Document complex algorithms** and business logic
+- **Pin major versions** with caret (`^`) in version constraints
+- **Keep `composer.lock` committed** for reproducible installs
+- **Define all commands as Composer scripts** for discoverability
+- **Use `vendor/bin/` prefix** when calling tools in scripts
+- **Run `composer install`** in CI, not `composer update`
 
 ### ❌ DON'T:
-- **Document obvious code** - let well-named functions speak for themselves
-- **Copy docstrings** between similar functions without customization
-- **Use vague type hints** like `Any` when more specific types are available
-- **Ignore type checking warnings** - they often reveal real issues
-- **Over-document simple functions** - focus on complex or public APIs
-- **Use outdated docstring formats** - stick to Google or NumPy style consistently
+- **Commit the `vendor/` directory** — always install from lock file
+- **Use `composer update` in CI** — this ignores the lock file
+- **Install dev dependencies in production** — use `--no-dev` flag
+- **Use global Composer installs** for project-specific tools
 
-**Remember: Good documentation and type hints make your code self-explaining and help prevent bugs before they happen.**
+
+---
+
+# Rule: 02-server-log-analysis-on-demand.md
+
+---
+id: server_log_analysis_on_demand
+description: "When users share server output, automatically analyze and present errors in actionable format"
+---
+
+# Server Log Analysis on Demand
+
+When users share local server output (via command history, pasted logs, or terminal output), automatically extract and analyze errors without being asked.
+
+## Trigger Patterns
+
+Automatically analyze when you see:
+- Command output containing server logs
+- Server startup messages followed by request logs
+- HTTP status codes in terminal output
+- Error patterns in development server output
+
+## Analysis Workflow
+
+### 1. Extract Error Information
+Scan for: HTTP error codes, error messages, failed requests, missing resources, repeated patterns.
+
+### 2. Group and Categorize
+Organize by:
+- **Type**: 404s, 500s, build errors, etc.
+- **Frequency**: one-time vs. repeated
+- **Severity**: critical vs. informational
+- **Resource**: files, routes, APIs, etc.
+
+### 3. Present Findings
+
+```
+🔍 Server Log Analysis
+
+Issues Detected:
+- 2 × Missing assets (404)
+- 1 × Missing favicon
+
+Missing Assets:
+  → /assets/style.css
+  → /assets/logos/logo.png
+
+Root Cause Analysis:
+[educated guess based on patterns]
+
+Verification Steps:
+1. [specific command to verify hypothesis]
+2. [specific file/config to review]
+```
+
+## ✅ DO
+
+- **Automatically analyze** shared server logs without being asked
+- **Identify patterns** proactively
+- **Offer specific next steps** based on findings
+- **Ask permission** before running diagnostic commands
+
+## ❌ DON'T
+
+- Don't wait for user to ask for analysis
+- Don't present raw logs without interpretation
+- Don't offer generic advice without analyzing the specific errors
+- Don't run commands without user permission
+
+## Common Scenarios
+
+### Build Output Mismatch
+Server requests `/assets/style.css`, build output has `dist/css/style.css` → path mismatch between build output and HTML references.
+
+### Assets Not Copied
+Server requests `/assets/logos/logo.png`, assets folder missing from dist → configure build tool to copy static assets.
+
+### Base Path Issues
+Paths are correct and files exist but still 404 → rebuild and hard refresh, or check base URL config.
+
+## Post-Analysis Flow
+
+1. Confirm issues found in the logs
+2. Propose investigation steps
+3. Execute verification commands (with permission)
+4. Suggest fixes based on findings
+
+**Always provide analysis proactively when server logs are shared. Users want immediate understanding of issues, not just confirmation that errors exist.**
+
 
 ---
 
@@ -1873,129 +1498,6 @@ Stop and consider manual approach when:
 
 ---
 
-# Rule: 03-digitalocean-security.md
-
----
-id: digitalocean_security
-description: "DigitalOcean security, access control, and hardening best practices"
----
-
-# DigitalOcean Security
-
-Implement security best practices for DigitalOcean infrastructure to protect against unauthorized access and ensure compliance.
-
-## ✅ DO
-
-### Access Control
-- **Enforce SSH key authentication only** - disable password authentication
-- **Use separate API tokens** per environment (dev/staging/prod)
-- **Create sudo-capable user accounts** instead of using root directly
-- **Disable root login** via SSH configuration
-
-### System Hardening
-- **Automate OS updates** via cron or unattended-upgrades
-- **Configure automatic security updates** for critical patches
-- **Use fail2ban** or similar intrusion prevention systems
-- **Enable UFW or iptables** for host-based firewalls
-
-### Network Security
-- **Restrict SSH to known IPs** using DigitalOcean Firewalls
-- **Use private networking** for internal service communication
-- **Implement VPC isolation** between environments
-- **Close unused ports** and services
-
-### Secrets Management
-- **Never store secrets** in code or environment variables directly
-- **Use DO Secrets Manager** or HashiCorp Vault for sensitive data
-- **Rotate API keys and tokens** regularly
-- **Use service-specific credentials** with minimal required permissions
-
-## ❌ DON'T
-
-### Access Control Anti-patterns
-- Don't use password authentication for SSH access
-- Don't share API tokens between environments or team members
-- Don't use root account for routine operations
-- Don't hardcode credentials in deployment scripts
-
-### Network Security Mistakes
-- Don't expose services to 0.0.0.0/0 unless absolutely necessary
-- Don't use default firewall rules without reviewing them
-- Don't skip SSL/TLS termination for web services
-- Don't trust internal network traffic without authentication
-
-### Secrets Management Mistakes
-- Don't commit secrets to version control in any form
-- Don't use the same credentials across multiple environments
-- Don't store database passwords in plain text configuration files
-- Don't ignore credential rotation schedules
-
-## Implementation Examples
-
-### SSH Hardening
-```bash path=null start=null
-# /etc/ssh/sshd_config
-PasswordAuthentication no
-PermitRootLogin no
-PubkeyAuthentication yes
-MaxAuthTries 3
-ClientAliveInterval 300
-ClientAliveCountMax 2
-```
-
-### Firewall Setup
-```bash path=null start=null
-# Enable UFW and set defaults
-ufw default deny incoming
-ufw default allow outgoing
-
-# Allow essential services
-ufw allow ssh
-ufw allow 80/tcp
-ufw allow 443/tcp
-
-# Enable firewall
-ufw enable
-```
-
-### API Token Management
-```bash path=null start=null
-# Create environment-specific tokens
-doctl auth init --context production
-doctl auth init --context staging
-doctl auth init --context development
-
-# Switch between contexts
-doctl auth switch --context production
-```
-
-### Automated Updates
-```bash path=null start=null
-# Enable unattended upgrades (Ubuntu/Debian)
-echo 'Unattended-Upgrade::Automatic-Reboot "false";' >> /etc/apt/apt.conf.d/50unattended-upgrades
-systemctl enable unattended-upgrades
-```
-
-## Security Checklist
-
-### Initial Setup
-- [ ] SSH keys configured, password auth disabled
-- [ ] Root login disabled, sudo user created
-- [ ] Firewall rules configured and enabled
-- [ ] Automatic updates enabled
-- [ ] Monitoring and alerting set up
-
-### Ongoing Maintenance
-- [ ] API tokens rotated quarterly
-- [ ] Security updates applied monthly
-- [ ] Access logs reviewed regularly
-- [ ] Firewall rules audited quarterly
-- [ ] Backup encryption verified
-
-This approach provides defense in depth for DigitalOcean infrastructure while maintaining operational efficiency.
-
----
-
 # Rule: 03-git-pager-handling.md
 
 ---
@@ -2049,7 +1551,573 @@ Pagers are designed for interactive terminal use but can interfere with programm
 
 ---
 
-# Rule: 03-prefer-ssh-remotes.md
+# Rule: 03-local-environment-macos.md
+
+---
+id: local_environment_macos
+description: "Local development assumes macOS with Homebrew; use platform-appropriate approaches for cloud/CI environments"
+---
+
+# Local Environment: macOS
+
+The local development machine runs macOS. Assume macOS conventions, paths, and tooling for any local scripting or development work.
+
+## Local (macOS)
+
+- Homebrew is the package manager — `brew install` is the default for local tooling
+- Use macOS-native paths (`/usr/local/`, `/opt/homebrew/`, `~/Library/`, etc.)
+- Assume `zsh` as the default shell
+- Use `launchd` for local services, not `systemd`
+- Prefer macOS-compatible flags for CLI tools (e.g. BSD `sed`, `date`, etc.) or use GNU versions installed via Homebrew when needed
+
+## Remote / Cloud / CI
+
+When working in non-local environments, use platform-appropriate tooling:
+
+- **Docker**: Assume Debian/Alpine base images unless specified; use `apt-get` or `apk`
+- **GitHub Actions**: Use Ubuntu runners by default; use `apt-get` for dependencies
+- **DigitalOcean / Linux VMs**: Assume Ubuntu/Debian; use `apt-get` or `snap`
+- **General**: Don't assume Homebrew or macOS tools are available outside the local machine
+
+## ✅ DO
+
+- Use `brew install` for local tool installation
+- Detect the environment when writing cross-platform scripts
+- Use `/bin/bash` or `/bin/sh` for portable scripts targeting CI/cloud
+- Note BSD vs GNU differences when they matter (e.g. `sed -i ''` on macOS vs `sed -i` on Linux)
+
+## ❌ DON'T
+
+- Don't suggest `apt-get` for local macOS installs
+- Don't suggest `brew` in Dockerfiles, CI pipelines, or remote servers
+- Don't assume `systemd` locally or `launchd` remotely
+
+
+---
+
+# Rule: 03-php-github-actions.md
+
+---
+id: php_github_actions
+description: "GitHub Actions patterns for PHP projects using shivammathur/setup-php"
+---
+
+# PHP in GitHub Actions
+
+Standards for setting up PHP in GitHub Actions workflows using `shivammathur/setup-php`.
+
+## Setup Action
+
+Use **[shivammathur/setup-php](https://github.com/shivammathur/setup-php)** (`v2`) to install PHP in all workflows.
+
+### Pin by Commit SHA
+Always pin the action by full commit SHA, not by tag:
+
+```yaml
+# ✅ Pinned by SHA with version comment
+uses: shivammathur/setup-php@d59004228537ca90c8dca680592a08a675bf52b6 # v2
+
+# ❌ Pinned by tag (vulnerable to tag mutation)
+uses: shivammathur/setup-php@v2
+```
+
+This applies to **all** third-party actions (`actions/checkout`, `actions/cache`, `actions/upload-pages-artifact`, etc.).
+
+### Default Configuration
+- **PHP version**: `'8.5'` (latest stable — keep this updated)
+- **Tools**: `composer:v2` (always specify Composer v2 explicitly)
+- **Extensions**: only add what the project needs (e.g. `intl` for date/locale handling)
+
+## Composite Action Pattern
+
+Extract shared PHP setup into a **reusable composite action** at `.github/actions/setup-php-project/action.yml`:
+
+```yaml
+name: Setup PHP Project
+description: Install PHP, cache Composer, and install dependencies
+
+inputs:
+  php-version:
+    description: PHP version to install
+    required: false
+    default: '8.5'
+  php-extensions:
+    description: Space-separated list of PHP extensions
+    required: false
+    default: ''
+  php-tools:
+    description: Comma-separated list of PHP tools
+    required: false
+    default: 'composer:v2'
+  composer-install-args:
+    description: Extra arguments for composer install
+    required: false
+    default: '--prefer-dist --no-progress'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup PHP
+      uses: shivammathur/setup-php@d59004228537ca90c8dca680592a08a675bf52b6 # v2
+      with:
+        php-version: ${{ inputs.php-version }}
+        tools: ${{ inputs.php-tools }}
+        extensions: ${{ inputs.php-extensions }}
+
+    - name: Get Composer cache directory
+      id: composer-cache
+      shell: bash
+      run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+    - name: Cache Composer dependencies
+      if: ${{ !env.ACT }}
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-composer-
+
+    - name: Install dependencies
+      shell: bash
+      run: composer install ${{ inputs.composer-install-args }}
+```
+
+### Using the Composite Action
+Reference it from workflow jobs:
+
+```yaml
+steps:
+  - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+  - name: Setup PHP project
+    uses: ./.github/actions/setup-php-project
+
+  # Override defaults when needed:
+  - name: Setup PHP project (with extensions and extra tools)
+    uses: ./.github/actions/setup-php-project
+    with:
+      php-extensions: intl
+      php-tools: 'composer:v2, cs2pr'
+```
+
+## Composer Caching
+
+- **Cache the Composer download directory**, not `vendor/` — this caches downloaded packages while still respecting lock file changes
+- **Key on `composer.lock` hash** for exact cache hits
+- **Include a fallback restore key** (`${{ runner.os }}-composer-`) for partial cache hits
+- **Skip caching when running locally with `act`** via `if: ${{ !env.ACT }}`
+
+## CI Tools
+
+### cs2pr
+Install `cs2pr` alongside Composer to convert PHPCS checkstyle output into GitHub PR annotations:
+
+```yaml
+php-tools: 'composer:v2, cs2pr'
+```
+
+Then pipe PHPCS output:
+
+```yaml
+- name: Run PHP_CodeSniffer
+  run: vendor/bin/phpcs --report=checkstyle -q | cs2pr
+```
+
+### PHPStan GitHub Format
+Use `--error-format=github` to get inline annotations:
+
+```yaml
+- name: Run PHPStan
+  run: composer analyse -- --error-format=github
+```
+
+## Workflow Patterns
+
+### Separate CI Jobs
+Split quality checks into **parallel jobs** for faster feedback:
+
+```yaml
+jobs:
+  lint:
+    name: Lint (PHP_CodeSniffer)
+    # ...
+  analyse:
+    name: Static Analysis (PHPStan)
+    # ...
+  test:
+    name: Tests (PHPUnit)
+    # ...
+  build-check:
+    name: Build Check
+    needs: [lint, analyse, test]
+    # ...
+```
+
+### Reusable CI via workflow_call
+Allow the CI workflow to be called from other workflows (e.g. build-deploy):
+
+```yaml
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: ['feature/**', 'fix/**']
+  workflow_call:
+```
+
+Then invoke it:
+
+```yaml
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+```
+
+### Timezone in CI
+When tests depend on date/time, set `TZ` explicitly:
+
+```yaml
+env:
+  TZ: America/Toronto
+```
+
+### Permissions
+Always set minimal permissions:
+
+```yaml
+permissions:
+  contents: read
+```
+
+## Best Practices
+
+### ✅ DO:
+- **Pin all third-party actions by SHA** with a version comment
+- **Use a composite action** to avoid duplicating PHP setup across jobs
+- **Cache Composer's download directory**, not `vendor/`
+- **Use `cs2pr`** for PHPCS PR annotations
+- **Use `--error-format=github`** for PHPStan PR annotations
+- **Set `TZ` explicitly** when tests involve dates
+- **Use `workflow_call`** to share CI across workflows
+
+### ❌ DON'T:
+- **Pin actions by tag** — tags can be force-pushed
+- **Duplicate setup steps** across multiple jobs — extract a composite action
+- **Cache `vendor/`** directly — this can cause stale dependency issues
+- **Skip the `!env.ACT` guard** on cache steps if you use `act` for local testing
+
+
+---
+
+# Rule: 03-systematic-problem-solving.md
+
+---
+id: systematic_problem_solving
+description: "Always use systematic, skeptical approach to problem-solving and debugging"
+---
+
+# Systematic Problem-Solving Approach
+
+Never jump to conclusions. Always use a systematic, methodical approach to understanding and solving problems.
+
+## Core principles
+
+- Never jump to conclusions
+- Always ask clarifying questions before diagnosing problems
+- Break problems down into components before recommending solutions
+- Validate assumptions before proposing any fix
+- Do not start by problem-solving — start by debugging
+- Never invent context or guess intent; ask first
+
+## Debugging protocol
+
+Always debug first — do not attempt a solution before the root cause is clear.
+
+1. **Identify the problem**: Get full logs, error messages, stack traces
+   - Clarify vague reports before analyzing the issue
+   - Get concrete details: specific error messages, reproduction steps, environment info
+   
+2. **List and verify likely failure points**: Auth, DB, config, network, etc.
+   - Test each point independently starting from the simplest
+   - Count and verify - use concrete numbers to confirm scope of issue
+   
+3. **Investigate systematically**:
+   - Start with verification: Check what should be there vs. what actually exists
+   - Use command-line tools to validate assumptions (e.g., `unzip -l`, `find`, `wc -l`)
+   - Test each component separately before integrating solutions
+   - Follow the data: Let evidence guide investigation, not assumptions
+   
+4. **Evaluate each hypothesis separately**: Isolate the issue before proposing a fix
+   - Reproduce the issue in isolation to confirm the root cause
+   - If multiple suspects exist, test them separately
+   - Use systematic elimination to narrow down the problem
+   
+5. **Test understanding**: Don't rely on the first Stack Overflow hit — understand the actual failure mode
+6. **Eliminate systematically**: If multiple potential causes, eliminate them one by one
+
+7. **Recommend solutions carefully**:
+   - Propose solutions only after identifying the root cause
+   - Address only the identified issue - avoid scope creep
+   - Test the fix before considering the issue resolved
+   - Verify the solution resolves the original problem completely
+
+## Implementation Guidelines
+
+### ✅ DO:
+- Stay systematic - follow logical progression
+- Use concrete evidence - numbers, logs, reproducible steps over assumptions
+- Test incrementally - verify each step before moving to the next
+- Document findings - track what you've tested and learned
+- Build minimal reproducible examples
+
+### ❌ DON'T:
+- Jump between solutions without systematic investigation
+- Make assumptions without verification
+- Skip steps in the debugging process
+- Run persistent commands (`npm run dev`, `npm start`) in terminal - use one-shot commands (`npm run build`)
+- Fix multiple issues simultaneously
+
+## Confidence and verification
+
+- If unsure, state confidence level explicitly
+- Suggest verification steps when uncertain
+- Cite relevant standards or documentation when recommending tools or techniques
+- Be transparent — explicitly note when something is inferred or uncertain
+
+
+---
+
+# Rule: 04-avoid-regex-parsing.md
+
+---
+id: avoid_regex_parsing
+description: "Never use regular expressions for parsing structured text formats"
+---
+
+# Avoid Regex for Structured Data Parsing
+
+Never use regular expressions for parsing or transforming structured text formats (like Markdown, HTML, JSON, YAML, or code).
+
+Always use well-maintained, officially supported libraries that are purpose-built for the format you're working with.
+
+## Examples
+
+✅ **DO USE:**
+- `remark` to modify Markdown documents
+- `turndown` (mixmark-io) to convert HTML to Markdown
+- YAML parser to handle frontmatter
+- JSON.parse() for JSON data
+- DOM parser for HTML manipulation
+
+❌ **AVOID:**
+- `text.replace(/#+ (.+)/g, ...)` to parse headings
+- `htmlString.match(/<h[1-6]>(.*?)<\/h[1-6]>/g)` for DOM parsing
+- Regex patterns for extracting YAML frontmatter
+- Complex regex for code parsing
+
+## Why This Matters
+
+- **Reliability**: Regex is brittle and error-prone when applied to structured formats
+- **Readability**: Parser libraries make your intent clearer to collaborators
+- **Maintainability**: Purpose-built libraries handle edge cases and evolution of formats
+- **Bug Prevention**: Reduces risk of subtle parsing errors and security vulnerabilities
+
+## When Regex Is Appropriate
+
+Regex should be used for:
+- Simple string validation (email format, phone numbers)
+- Find-and-replace operations on plain text
+- Pattern matching in unstructured text
+- Log parsing for specific known patterns
+
+---
+
+# Rule: 04-github-actions-workflow-standards.md
+
+---
+id: github_actions_workflow_standards
+description: "Security, maintainability, and correctness standards for GitHub Actions workflows"
+---
+
+# GitHub Actions Workflow Standards
+
+Write secure, maintainable, and correct GitHub Actions workflows by following these standards.
+
+## Security
+
+### Pin actions by SHA
+- Always pin third-party actions to a full commit SHA, not a mutable tag
+- Add a version comment for readability: `uses: actions/checkout@<sha> # v4`
+- Floating tags (`@v4`, `@main`) can be silently replaced with malicious code
+
+### Restrict permissions
+- Always include an explicit `permissions` block at the workflow level
+- Use the minimum permissions required (e.g., `contents: read` for CI)
+- Never rely on the repository's default token permissions
+
+### Pin Docker images
+- Use specific version tags for Docker images, not `:latest`
+- `:latest` is non-reproducible and can break without warning
+
+## Maintainability
+
+### Eliminate duplication with composite actions
+- When the same setup steps repeat across multiple jobs, extract them into a local composite action (e.g., `.github/actions/setup-project/action.yml`)
+- Composite actions accept inputs, making them flexible enough for slight variations (e.g., extra extensions, dev vs. prod installs)
+- This reduces workflow files to business logic only
+
+### Cache keys must reference committed files
+- Cache keys like `hashFiles('**/lockfile')` only work if the lockfile is committed
+- If a lockfile is gitignored, use the manifest file instead (e.g., `composer.json`, `package.json`)
+- A cache key that always resolves to the same hash is effectively no cache at all
+
+### Composer scripts must use vendor/bin/
+- Always reference tools via `vendor/bin/<tool>` in `composer.json` scripts
+- Bare command names (e.g., `phpunit`) depend on PATH, which varies between local, CI, and container environments
+- This applies equally to `phpcs`, `phpstan`, `phpunit`, and any other Composer-installed binary
+
+## act compatibility
+
+- Use `if: ${{ !env.ACT }}` to skip steps that require GitHub infrastructure (artifact uploads, Pages deployment, PR comments, Docker-in-Docker)
+- See the `local-ci-act` directive for full `act` setup and usage standards
+
+## ✅ DO
+
+- Pin all action versions by SHA with version comments
+- Add explicit `permissions` block to every workflow
+- Pin Docker image tags to specific versions
+- Extract repeated steps into composite actions
+- Verify cache keys reference committed files
+
+## ❌ DON'T
+
+- Don't use floating tags (`@v4`, `@latest`) for actions or Docker images
+- Don't rely on default repository permissions
+- Don't duplicate setup steps across multiple jobs
+- Don't use bare command names in CI scripts when a full path is available
+- Don't assume lockfiles exist in the repo without checking `.gitignore`
+
+
+---
+
+# Rule: 04-php-standards.md
+
+---
+id: php_standards
+description: "Core PHP development standards and project conventions"
+---
+
+# PHP Standards Overview
+
+Core PHP development standards for consistent, maintainable code across projects.
+
+## PHP Version
+
+- **Minimum version**: PHP 8.5 (`"php": "^8.5"` in `composer.json`)
+- **CI default**: PHP 8.5 (latest stable)
+- **Always target the latest stable PHP release** in CI workflows and bump the minimum version accordingly
+- **Use modern PHP features**: typed properties, named arguments, union types, enums, fibers, `readonly`, `match` expressions
+- **Prefer `DateTimeImmutable`** over `DateTime` for safer date handling
+
+## Coding Standards
+
+### Style
+- **Follow PSR-12** as the base coding standard
+- **Enforce short array syntax** (`[]` not `array()`)
+- **Line length**: 120 characters soft limit, no hard limit
+- **Use strict types** where practical
+
+### Autoloading
+- **Follow PSR-4** for class autoloading
+- **Namespace convention**: top-level namespace maps to `src/`
+- **Dev namespace** maps to `tests/` via `autoload-dev`
+
+```json
+{
+    "autoload": {
+        "psr-4": {
+            "YourNamespace\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "YourNamespace\\Tests\\": "tests/"
+        }
+    }
+}
+```
+
+### Class and File Organization
+- One class per file
+- File name matches class name
+- Helpers and utilities go in a `Helpers/` subdirectory under `src/`
+- Partials (template fragments with side effects) go in `partials/` and are excluded from strict analysis rules
+
+### Error Handling
+- **Use typed exceptions** (`InvalidArgumentException`, domain-specific exceptions)
+- **Include contextual messages** in exception strings
+- **Use try/catch with specific exception types**, not bare `catch (\Exception $e)`
+
+```php
+if ($date === false) {
+    throw new InvalidArgumentException("Invalid date format: {$dateString}. Expected YYYY-MM-DD.");
+}
+```
+
+## Project Structure
+
+Standard PHP project layout:
+
+```
+project/
+├── src/                  # Application source code
+│   ├── Helpers/          # Utility classes
+│   └── partials/         # Template partials (HTML output)
+├── tests/                # PHPUnit test files
+├── dist/                 # Build output (generated, gitignored)
+├── vendor/               # Composer dependencies (gitignored)
+├── build.php             # Build script (if applicable)
+├── composer.json         # Dependency and script definitions
+├── composer.lock         # Locked dependency versions (committed)
+├── phpcs.xml             # PHP_CodeSniffer configuration
+├── phpstan.neon          # PHPStan configuration
+├── phpunit.xml           # PHPUnit configuration
+└── Makefile              # Developer convenience commands
+```
+
+## Quick Reference
+
+### Essential Commands
+```bash
+# Install dependencies
+composer install
+
+# Run all quality checks
+composer check
+
+# Individual checks
+composer lint          # Code style (PHPCS)
+composer analyse       # Static analysis (PHPStan)
+composer test          # Unit tests (PHPUnit)
+
+# Fix code style automatically
+composer lint:fix
+```
+
+## Related Rules
+
+- **Composer**: See `php-composer.md` for dependency management and script patterns
+- **GitHub Actions**: See `php-github-actions.md` for CI/CD PHP setup
+- **Testing**: See `php-testing.md` for PHPUnit standards
+- **Code Quality**: See `php-code-quality.md` for linting and static analysis
+
+
+---
+
+# Rule: 04-prefer-ssh-remotes.md
 
 ---
 id: prefer_ssh_remotes
@@ -2228,674 +2296,6 @@ Host github.com
 
 ---
 
-# Rule: 03-python-error-handling.md
-
----
-id: python_error_handling
-description: "Python error handling, exception management, and robust error recovery patterns"
----
-
-# Python Error Handling
-
-Python error handling, exception management, and robust error recovery patterns.
-
-## Exception Handling Best Practices
-
-### Use Specific Exception Types
-- **Use specific exception types**, not bare `except:`
-- **Catch the most specific exception first**
-- **Include meaningful error messages**
-- **Log errors appropriately** with context
-
-```python
-# ✅ Good exception handling
-try:
-    result = api_call()
-except requests.exceptions.RequestException as e:
-    logger.error(f"API call failed: {e}")
-    return None
-except ValueError as e:
-    logger.warning(f"Invalid data received: {e}")
-    return default_value
-except Exception as e:
-    logger.exception(f"Unexpected error: {e}")
-    raise
-
-# ❌ Poor exception handling
-try:
-    result = api_call()
-except:
-    pass
-```
-
-### Exception Hierarchy
-```python
-# Handle exceptions from most specific to most general
-try:
-    process_data()
-except FileNotFoundError:
-    # Handle missing file specifically
-    logger.error("Configuration file not found")
-    create_default_config()
-except PermissionError:
-    # Handle permission issues
-    logger.error("Permission denied accessing file")
-    raise
-except IOError:
-    # Handle other I/O errors
-    logger.error("I/O error occurred")
-    raise
-except Exception:
-    # Handle any other unexpected errors
-    logger.exception("Unexpected error during processing")
-    raise
-```
-
-## Custom Exceptions
-
-### Create Domain-Specific Exceptions
-```python
-class APIError(Exception):
-    """Base exception for API-related errors."""
-    pass
-
-class AuthenticationError(APIError):
-    """Raised when authentication fails."""
-    pass
-
-class ValidationError(Exception):
-    """Raised when data validation fails."""
-    
-    def __init__(self, message, field=None, value=None):
-        self.field = field
-        self.value = value
-        super().__init__(message)
-
-class ConfigurationError(Exception):
-    """Raised when configuration is invalid."""
-    
-    def __init__(self, message, config_key=None):
-        self.config_key = config_key
-        super().__init__(message)
-```
-
-### Using Custom Exceptions
-```python
-def validate_user_input(data):
-    """Validate user input data."""
-    if not data.get('email'):
-        raise ValidationError("Email is required", field='email')
-    
-    if not data.get('age') or data['age'] < 0:
-        raise ValidationError(
-            "Age must be a positive number", 
-            field='age', 
-            value=data.get('age')
-        )
-
-def authenticate_user(token):
-    """Authenticate user with token."""
-    if not token:
-        raise AuthenticationError("Token is required")
-    
-    if not is_valid_token(token):
-        raise AuthenticationError("Invalid token provided")
-```
-
-## API Error Handling Patterns
-
-### Retry Logic with Exponential Backoff
-```python
-import time
-import random
-from functools import wraps
-
-def retry_with_backoff(max_retries=3, base_delay=1, max_delay=60):
-    """Decorator for retrying functions with exponential backoff."""
-    
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            for attempt in range(max_retries):
-                try:
-                    return func(*args, **kwargs)
-                except (requests.exceptions.ConnectionError, 
-                       requests.exceptions.Timeout) as e:
-                    if attempt == max_retries - 1:
-                        raise
-                    
-                    # Calculate delay with jitter
-                    delay = min(base_delay * (2 ** attempt), max_delay)
-                    jitter = random.uniform(0.1, 0.3) * delay
-                    time.sleep(delay + jitter)
-                    
-                    logger.warning(f"Attempt {attempt + 1} failed, retrying in {delay:.1f}s")
-            
-            return func(*args, **kwargs)
-        return wrapper
-    return decorator
-
-@retry_with_backoff(max_retries=3)
-def make_api_call(url, data):
-    """Make API call with automatic retry."""
-    response = requests.post(url, json=data, timeout=30)
-    response.raise_for_status()
-    return response.json()
-```
-
-### Notion API Error Handling (Specific Example)
-```python
-import time
-from notion_client import APIResponseError
-
-def safe_notion_query(notion_client, **query_params):
-    """Make Notion API call with proper error handling."""
-    max_retries = 3
-    base_delay = 1
-    
-    for attempt in range(max_retries):
-        try:
-            return notion_client.databases.query(**query_params)
-            
-        except APIResponseError as e:
-            if e.status == 429:  # Rate limited
-                delay = base_delay * (2 ** attempt)
-                logger.warning(f"Rate limited, waiting {delay}s before retry")
-                time.sleep(delay)
-                continue
-                
-            elif e.status == 401:
-                raise AuthenticationError("Invalid Notion API token")
-                
-            elif e.status == 404:
-                raise APIError(f"Notion resource not found: {e}")
-                
-            else:
-                logger.error(f"Notion API error: {e.status} - {e}")
-                raise APIError(f"Notion API error: {e}")
-                
-        except requests.exceptions.RequestException as e:
-            if attempt == max_retries - 1:
-                raise APIError(f"Network error calling Notion API: {e}")
-            
-            delay = base_delay * (2 ** attempt)
-            time.sleep(delay)
-    
-    raise APIError(f"Failed after {max_retries} attempts")
-```
-
-## Error Logging Best Practices
-
-### Structured Logging
-```python
-import logging
-import traceback
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
-def process_user_data(user_id):
-    """Process user data with proper error logging."""
-    try:
-        user = fetch_user(user_id)
-        result = complex_processing(user)
-        return result
-        
-    except ValidationError as e:
-        logger.warning(
-            f"Validation failed for user {user_id}: {e}",
-            extra={'user_id': user_id, 'field': e.field}
-        )
-        raise
-        
-    except APIError as e:
-        logger.error(
-            f"API error processing user {user_id}: {e}",
-            extra={'user_id': user_id}
-        )
-        raise
-        
-    except Exception as e:
-        logger.exception(
-            f"Unexpected error processing user {user_id}: {e}",
-            extra={'user_id': user_id}
-        )
-        raise
-```
-
-### Context Managers for Resource Management
-```python
-import contextlib
-from pathlib import Path
-
-@contextlib.contextmanager
-def safe_file_operation(file_path, mode='r'):
-    """Context manager for safe file operations."""
-    file_obj = None
-    try:
-        file_obj = open(file_path, mode)
-        yield file_obj
-    except FileNotFoundError:
-        logger.error(f"File not found: {file_path}")
-        raise
-    except PermissionError:
-        logger.error(f"Permission denied: {file_path}")
-        raise
-    except IOError as e:
-        logger.error(f"I/O error with file {file_path}: {e}")
-        raise
-    finally:
-        if file_obj:
-            file_obj.close()
-
-# Usage
-try:
-    with safe_file_operation('config.json') as f:
-        data = json.load(f)
-except (FileNotFoundError, PermissionError, IOError):
-    # Handle errors appropriately
-    data = create_default_config()
-```
-
-## Error Recovery Patterns
-
-### Graceful Degradation
-```python
-def get_user_preferences(user_id, use_cache=True):
-    """Get user preferences with graceful degradation."""
-    try:
-        # Try primary data source
-        return fetch_from_database(user_id)
-        
-    except DatabaseError as e:
-        logger.warning(f"Database error, trying cache: {e}")
-        
-        if use_cache:
-            try:
-                return fetch_from_cache(user_id)
-            except CacheError:
-                logger.warning("Cache also failed, using defaults")
-        
-        # Fall back to defaults
-        return get_default_preferences()
-
-def send_notification(user_id, message):
-    """Send notification with multiple fallback methods."""
-    methods = [
-        ('email', send_email),
-        ('sms', send_sms),
-        ('push', send_push_notification)
-    ]
-    
-    for method_name, method_func in methods:
-        try:
-            result = method_func(user_id, message)
-            logger.info(f"Notification sent via {method_name}")
-            return result
-            
-        except NotificationError as e:
-            logger.warning(f"{method_name} notification failed: {e}")
-            continue
-    
-    # All methods failed
-    logger.error(f"All notification methods failed for user {user_id}")
-    raise NotificationError("All notification methods failed")
-```
-
-## Best Practices
-
-### ✅ DO:
-- **Use specific exception types** that clearly indicate the error
-- **Include contextual information** in error messages
-- **Log errors with appropriate levels** (warning, error, critical)
-- **Implement retry logic** for transient failures
-- **Use context managers** for resource management
-- **Create custom exceptions** for domain-specific errors
-- **Handle errors at the appropriate level** in your application
-
-### ❌ DON'T:
-- **Use bare except clauses** - they catch everything, including system exits
-- **Ignore exceptions silently** - always log or handle appropriately
-- **Raise generic exceptions** when specific ones would be more helpful
-- **Retry indefinitely** - always set retry limits
-- **Log sensitive information** in error messages
-- **Re-raise exceptions without context** - add meaningful information
-
-**Remember: Good error handling makes your application more robust and easier to debug. Always think about what could go wrong and handle it gracefully.**
-
----
-
-# Rule: 03-systematic-problem-solving.md
-
----
-id: systematic_problem_solving
-description: "Always use systematic, skeptical approach to problem-solving and debugging"
----
-
-# Systematic Problem-Solving Approach
-
-Never jump to conclusions. Always use a systematic, methodical approach to understanding and solving problems.
-
-## Core principles
-
-- Never jump to conclusions
-- Always ask clarifying questions before diagnosing problems
-- Break problems down into components before recommending solutions
-- Validate assumptions before proposing any fix
-- Do not start by problem-solving — start by debugging
-- Never invent context or guess intent; ask first
-
-## Debugging protocol
-
-Always debug first — do not attempt a solution before the root cause is clear.
-
-1. **Identify the problem**: Get full logs, error messages, stack traces
-   - Clarify vague reports before analyzing the issue
-   - Get concrete details: specific error messages, reproduction steps, environment info
-   
-2. **List and verify likely failure points**: Auth, DB, config, network, etc.
-   - Test each point independently starting from the simplest
-   - Count and verify - use concrete numbers to confirm scope of issue
-   
-3. **Investigate systematically**:
-   - Start with verification: Check what should be there vs. what actually exists
-   - Use command-line tools to validate assumptions (e.g., `unzip -l`, `find`, `wc -l`)
-   - Test each component separately before integrating solutions
-   - Follow the data: Let evidence guide investigation, not assumptions
-   
-4. **Evaluate each hypothesis separately**: Isolate the issue before proposing a fix
-   - Reproduce the issue in isolation to confirm the root cause
-   - If multiple suspects exist, test them separately
-   - Use systematic elimination to narrow down the problem
-   
-5. **Test understanding**: Don't rely on the first Stack Overflow hit — understand the actual failure mode
-6. **Eliminate systematically**: If multiple potential causes, eliminate them one by one
-
-7. **Recommend solutions carefully**:
-   - Propose solutions only after identifying the root cause
-   - Address only the identified issue - avoid scope creep
-   - Test the fix before considering the issue resolved
-   - Verify the solution resolves the original problem completely
-
-## Implementation Guidelines
-
-### ✅ DO:
-- Stay systematic - follow logical progression
-- Use concrete evidence - numbers, logs, reproducible steps over assumptions
-- Test incrementally - verify each step before moving to the next
-- Document findings - track what you've tested and learned
-- Build minimal reproducible examples
-
-### ❌ DON'T:
-- Jump between solutions without systematic investigation
-- Make assumptions without verification
-- Skip steps in the debugging process
-- Run persistent commands (`npm run dev`, `npm start`) in terminal - use one-shot commands (`npm run build`)
-- Fix multiple issues simultaneously
-
-## Confidence and verification
-
-- If unsure, state confidence level explicitly
-- Suggest verification steps when uncertain
-- Cite relevant standards or documentation when recommending tools or techniques
-- Be transparent — explicitly note when something is inferred or uncertain
-
-
----
-
-# Rule: 04-avoid-regex-parsing.md
-
----
-id: avoid_regex_parsing
-description: "Never use regular expressions for parsing structured text formats"
----
-
-# Avoid Regex for Structured Data Parsing
-
-Never use regular expressions for parsing or transforming structured text formats (like Markdown, HTML, JSON, YAML, or code).
-
-Always use well-maintained, officially supported libraries that are purpose-built for the format you're working with.
-
-## Examples
-
-✅ **DO USE:**
-- `remark` to modify Markdown documents
-- `turndown` (mixmark-io) to convert HTML to Markdown
-- YAML parser to handle frontmatter
-- JSON.parse() for JSON data
-- DOM parser for HTML manipulation
-
-❌ **AVOID:**
-- `text.replace(/#+ (.+)/g, ...)` to parse headings
-- `htmlString.match(/<h[1-6]>(.*?)<\/h[1-6]>/g)` for DOM parsing
-- Regex patterns for extracting YAML frontmatter
-- Complex regex for code parsing
-
-## Why This Matters
-
-- **Reliability**: Regex is brittle and error-prone when applied to structured formats
-- **Readability**: Parser libraries make your intent clearer to collaborators
-- **Maintainability**: Purpose-built libraries handle edge cases and evolution of formats
-- **Bug Prevention**: Reduces risk of subtle parsing errors and security vulnerabilities
-
-## When Regex Is Appropriate
-
-Regex should be used for:
-- Simple string validation (email format, phone numbers)
-- Find-and-replace operations on plain text
-- Pattern matching in unstructured text
-- Log parsing for specific known patterns
-
----
-
-# Rule: 04-list-formatting.md
-
----
-id: list_formatting
-description: "Use consistent, scannable list formatting with proper structure and minimal nesting"
----
-
-# List Formatting Standards
-
-Use consistent, scannable formatting for lists to improve readability and structure.
-
-## Basic list guidelines
-
-- Use **single-level lists only** — no sub-bullets or excessive nesting
-- Avoid starting a section directly with a list — include a brief intro paragraph first
-- Use lists only when helpful — prefer paragraphs over stacked lists when appropriate
-
-## Titled list items
-
-When list items have titles:
-
-- The title should be on the same line as the bullet
-- Follow the title with a colon
-- Format as: `- **Title:** Description or details`
-
-## Examples
-
-✅ **Good formatting:**
-- **Define data contract:** Use the Data Attributes API to enumerate available fields
-
-❌ **Bad formatting:**
-- **Define data contract**  
-Use the Data Attributes API to enumerate available fields
-
-## Task list formatting
-
-For action items:
-- Format as: `**Action or Focus:** Clarifying detail`
-- Keep items as human-readable task lines
-- Avoid nested action items
-
-## Structural guidelines
-
-- Use proper heading hierarchy (`#`, `##`, `###`) for organization
-- Follow every heading with a full sentence or paragraph before any list
-- Prefer `#` for main section headings to improve scannability in flat editors
-- Use **sentence case** for all section headings and subheadings
-
----
-
-# Rule: 04-python-standards.md
-
----
-id: python_standards
-description: "Core Python development standards and best practices overview"
----
-
-# Python Standards Overview
-
-Core Python development standards and best practices for consistent, maintainable code.
-
-## Core Principles
-
-### Code Quality Standards
-- **Follow PEP 8** for style consistency
-- **Use Black formatter** for automatic code formatting (88 character line length)
-- **Write descriptive names** that clearly indicate purpose
-- **Keep functions small** and focused on single responsibility
-- **Use type hints** consistently across your codebase
-
-### Development Environment
-- **Always use virtual environments** (`venv`, `conda`, or `poetry`)
-- **Never install packages globally** for project work
-- **Use `python-dotenv`** for environment variable management
-- **Include dependency files** (`requirements.txt` or `pyproject.toml`)
-
-### Error Handling
-- **Use specific exception types**, not bare `except:`
-- **Create custom exceptions** for domain-specific errors
-- **Include contextual information** in error messages
-- **Implement retry logic** for transient failures
-
-### Documentation
-- **Use Google-style docstrings** for all public functions and classes
-- **Include usage examples** in docstrings for complex functions
-- **Document exceptions** that functions can raise
-- **Use type hints** for function parameters and return values
-
-### Testing
-- **Use pytest** as the testing framework
-- **Write descriptive test names** that explain the scenario
-- **Use the AAA pattern** (Arrange, Act, Assert)
-- **Mock external dependencies** to isolate units under test
-- **Aim for high test coverage** (80%+) with focus on quality
-
-## Quick Reference
-
-### Basic Code Style
-```python
-# Good naming and structure
-user_count = 42
-MAX_RETRIES = 3
-
-class UserManager:
-    """Manages user operations."""
-    
-    def get_active_users(self) -> List[User]:
-        """Return list of active users."""
-        return self._fetch_users(active=True)
-    
-    def _fetch_users(self, active: bool = True) -> List[User]:
-        """Internal method to fetch users."""
-        pass
-```
-
-### Import Organization
-```python
-# Standard library
-import os
-from pathlib import Path
-from typing import List, Optional
-
-# Third-party
-import requests
-from django.conf import settings
-
-# Local application
-from .models import User
-from .utils import helper_function
-```
-
-### Error Handling Pattern
-```python
-try:
-    result = api_call()
-except requests.exceptions.RequestException as e:
-    logger.error(f"API call failed: {e}")
-    return None
-except ValueError as e:
-    logger.warning(f"Invalid data: {e}")
-    return default_value
-```
-
-## Essential Tools
-
-### Code Quality
-```bash
-# Format code
-black src/
-
-# Lint code
-flake8 src/  # or ruff check src/
-
-# Type check
-mypy src/
-
-# Run tests with coverage
-pytest --cov=src
-```
-
-### Project Setup
-```bash
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Install development dependencies
-pip install -r requirements-dev.txt
-```
-
-## Configuration Example
-
-### pyproject.toml
-```toml
-[tool.black]
-line-length = 88
-target-version = ['py39']
-
-[tool.mypy]
-python_version = "3.9"
-warn_return_any = true
-disallow_untyped_defs = true
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "--cov=src --cov-report=html"
-```
-
-## Related Rules
-
-For detailed guidance on specific areas:
-- **Code Style**: See `python-code-style.md` for formatting and naming conventions
-- **Error Handling**: See `python-error-handling.md` for exception patterns
-- **Documentation**: See `python-documentation.md` for docstring and type hint standards
-- **Testing**: See `python-testing.md` for comprehensive testing practices
-
-**Remember: Consistency is key. Establish team standards and stick to them across your entire project.**
-
-
----
-
 # Rule: 04-tone-neutral.md
 
 ---
@@ -3036,501 +2436,231 @@ Use consistent formatting for code blocks, headings, and document structure.
 
 ---
 
-# Rule: 05-no-code-in-briefs.md
+# Rule: 05-list-formatting.md
 
 ---
-id: no_code_in_briefs
-description: "Prevents inclusion of code examples in planning or brief-type documents"
+id: list_formatting
+description: "Use consistent, scannable list formatting with proper structure and minimal nesting"
 ---
 
-# No Code in Briefs
+# List Formatting Standards
 
-When generating **briefs, task drafts, project overviews, or planning docs**, do not include code examples or implementation details.
+Use consistent, scannable formatting for lists to improve readability and structure.
 
-## What to avoid
+## Basic list guidelines
 
-- Code examples, snippets, or implementation details
-- Specific syntax or technical implementations
-- Opinionated solutions before exploration begins
+- Use **single-level lists only** — no sub-bullets or excessive nesting
+- Avoid starting a section directly with a list — include a brief intro paragraph first
+- Use lists only when helpful — prefer paragraphs over stacked lists when appropriate
 
-## What to include instead
+## Titled list items
 
-- Keep content conceptual, requirements-level, or descriptive only
-- Express technical details in plain language, not code
-- Focus on the problem and requirements rather than solutions
+When list items have titles:
 
-## Rationale
+- The title should be on the same line as the bullet
+- Follow the title with a colon
+- Format as: `- **Title:** Description or details`
 
-The purpose is to avoid opinionated solutions before proper exploration and analysis begins. Planning documents should focus on understanding the problem space and requirements, not prescribing specific technical implementations.
+## Examples
+
+✅ **Good formatting:**
+- **Define data contract:** Use the Data Attributes API to enumerate available fields
+
+❌ **Bad formatting:**
+- **Define data contract**  
+Use the Data Attributes API to enumerate available fields
+
+## Task list formatting
+
+For action items:
+- Format as: `**Action or Focus:** Clarifying detail`
+- Keep items as human-readable task lines
+- Avoid nested action items
+
+## Structural guidelines
+
+- Use proper heading hierarchy (`#`, `##`, `###`) for organization
+- Follow every heading with a full sentence or paragraph before any list
+- Prefer `#` for main section headings to improve scannability in flat editors
+- Use **sentence case** for all section headings and subheadings
 
 ---
 
-# Rule: 05-python-testing.md
+# Rule: 05-php-testing.md
 
 ---
-id: python_testing
-description: "Python testing standards using pytest with comprehensive test organization and coverage guidelines"
+id: php_testing
+description: "PHPUnit testing standards, configuration, and test organization"
 ---
 
-# Python Testing Standards
+# PHP Testing Standards
 
-Python testing standards using pytest with comprehensive test organization and coverage guidelines.
+PHPUnit testing standards, configuration patterns, and test organization.
 
-## Testing Framework
+## Framework
 
-### pytest as Standard
-Use **pytest** as the primary testing framework for all Python projects:
+Use **PHPUnit 10+** as the testing framework.
 
+## PHPUnit Configuration
+
+Configure via `phpunit.xml` in the project root:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         failOnRisky="true"
+         failOnWarning="true">
+    <testsuites>
+        <testsuite name="Test Suite">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+        <exclude>
+            <directory>src/partials</directory>
+        </exclude>
+    </source>
+</phpunit>
+```
+
+### Key Settings
+- **`failOnRisky="true"`** — fail on tests that don't assert anything or have other risky behavior
+- **`failOnWarning="true"`** — fail on PHPUnit warnings (deprecations, etc.)
+- **`bootstrap="vendor/autoload.php"`** — use Composer autoloader
+- **Exclude partials** from code coverage (they are template fragments, not testable units)
+
+## Test Groups
+
+Use PHPUnit `@group` annotations to categorize tests that should run separately:
+
+```php
+/**
+ * @group html-validation
+ */
+class HtmlValidationTest extends TestCase { }
+
+/**
+ * @group network
+ */
+class UrlValidationTest extends TestCase { }
+```
+
+### Running Groups Selectively
 ```bash
-# Install pytest with common plugins
-pip install pytest pytest-cov pytest-mock pytest-xdist
+# Run all tests except slow/external groups
+vendor/bin/phpunit --exclude-group=html-validation,network
 
-# Run tests
-pytest
+# Run only HTML validation tests
+vendor/bin/phpunit --group=html-validation
 
-# Run with coverage
-pytest --cov=src --cov-report=html
+# Run only network-dependent tests
+vendor/bin/phpunit --group=network
+```
 
-# Run tests in parallel
-pytest -n auto
+Wire these into Composer scripts:
+
+```json
+{
+    "test": ["@build", "vendor/bin/phpunit --exclude-group=html-validation,network"],
+    "test:html": "vendor/bin/phpunit --group=html-validation",
+    "test:network": "vendor/bin/phpunit --group=network"
+}
 ```
 
 ## Test Organization
 
 ### Directory Structure
 ```
-project/
-├── src/
-│   ├── myproject/
-│   │   ├── __init__.py
-│   │   ├── models.py
-│   │   └── services.py
-├── tests/
-│   ├── __init__.py
-│   ├── conftest.py              # Shared fixtures
-│   ├── unit/
-│   │   ├── __init__.py
-│   │   ├── test_models.py
-│   │   └── test_services.py
-│   ├── integration/
-│   │   ├── __init__.py
-│   │   └── test_api_integration.py
-│   └── fixtures/
-│       ├── sample_data.json
-│       └── test_database.db
-└── pytest.ini
+tests/
+├── BuildTest.php              # Build process tests
+├── DateHelperTest.php         # Unit tests for helpers
+├── HtmlValidationTest.php     # HTML output validation (grouped)
+└── UrlValidationTest.php      # External URL checks (grouped)
 ```
 
-### Test File Naming
-- Test files: `test_*.py` or `*_test.py`
-- Test functions: `test_*`
-- Test classes: `Test*`
+### Naming Conventions
+- Test files: `{ClassName}Test.php`
+- Test methods: `test{DescriptiveBehavior}` — e.g. `testParseDateWithInvalidFormatThrowsException`
+- Use camelCase for method names (PSR convention)
 
-## Test Writing Best Practices
+## Writing Tests
 
-### Test Function Structure (AAA Pattern)
-```python
-import pytest
-from myproject.services import UserService
-from myproject.models import User
+### Test Structure
+```php
+namespace YourNamespace\Tests;
 
-class TestUserService:
-    """Test cases for UserService class."""
-    
-    def test_create_user_returns_user_when_valid_data_provided(self):
-        """Test that create_user returns a User object with valid input."""
-        # Arrange
-        service = UserService()
-        email = "test@example.com"
-        name = "Test User"
-        
-        # Act
-        result = service.create_user(email=email, name=name)
-        
-        # Assert
-        assert isinstance(result, User)
-        assert result.email == email
-        assert result.name == name
-        assert result.id is not None
-    
-    def test_create_user_raises_validation_error_when_invalid_email(self):
-        """Test that create_user raises ValidationError with invalid email."""
-        # Arrange
-        service = UserService()
-        invalid_email = "not-an-email"
-        name = "Test User"
-        
-        # Act & Assert
-        with pytest.raises(ValidationError, match="Invalid email format"):
-            service.create_user(email=invalid_email, name=name)
-```
+use PHPUnit\Framework\TestCase;
 
-### Descriptive Test Names
-Use descriptive names that explain the scenario:
+class DateHelperTest extends TestCase
+{
+    private DateHelper $dateHelper;
 
-```python
-# ✅ Good test names
-def test_should_return_user_when_valid_id_provided(self):
-def test_should_raise_not_found_error_when_user_does_not_exist(self):
-def test_should_calculate_correct_total_when_multiple_items_provided(self):
-def test_should_handle_empty_list_gracefully(self):
-
-# ❌ Poor test names
-def test_get_user(self):
-def test_calculate(self):
-def test_error(self):
-```
-
-## Fixtures and Test Data
-
-### Using pytest Fixtures
-```python
-# conftest.py
-import pytest
-from myproject.database import Database
-from myproject.models import User
-
-@pytest.fixture
-def database():
-    """Provide a test database instance."""
-    db = Database(":memory:")  # In-memory SQLite for tests
-    db.create_tables()
-    yield db
-    db.close()
-
-@pytest.fixture
-def sample_user():
-    """Provide a sample user for testing."""
-    return User(
-        id=1,
-        email="test@example.com",
-        name="Test User",
-        is_active=True
-    )
-
-@pytest.fixture
-def user_service(database):
-    """Provide a UserService instance with test database."""
-    from myproject.services import UserService
-    return UserService(database=database)
-
-@pytest.fixture
-def sample_users():
-    """Provide multiple sample users."""
-    return [
-        User(id=1, email="user1@test.com", name="User One"),
-        User(id=2, email="user2@test.com", name="User Two"),
-        User(id=3, email="user3@test.com", name="User Three"),
-    ]
-```
-
-### Using Fixtures in Tests
-```python
-def test_get_user_returns_correct_user(user_service, sample_user):
-    """Test retrieving a specific user."""
-    # Arrange
-    user_service.save_user(sample_user)
-    
-    # Act
-    result = user_service.get_user(sample_user.id)
-    
-    # Assert
-    assert result.email == sample_user.email
-    assert result.name == sample_user.name
-
-def test_get_all_users_returns_all_saved_users(user_service, sample_users):
-    """Test retrieving all users."""
-    # Arrange
-    for user in sample_users:
-        user_service.save_user(user)
-    
-    # Act
-    result = user_service.get_all_users()
-    
-    # Assert
-    assert len(result) == len(sample_users)
-    assert all(isinstance(user, User) for user in result)
-```
-
-## Mocking and Patching
-
-### Using pytest-mock
-```python
-def test_send_welcome_email_calls_email_service(mocker, user_service):
-    """Test that welcome email is sent when user is created."""
-    # Arrange
-    mock_email_service = mocker.patch('myproject.services.EmailService')
-    user_data = {"email": "test@example.com", "name": "Test User"}
-    
-    # Act
-    user = user_service.create_user(**user_data)
-    
-    # Assert
-    mock_email_service.send_welcome_email.assert_called_once_with(user.email)
-
-def test_api_retry_logic_with_temporary_failure(mocker, api_client):
-    """Test API retry logic with temporary failure."""
-    # Arrange
-    mock_request = mocker.patch('requests.post')
-    mock_request.side_effect = [
-        requests.exceptions.ConnectionError("Temporary failure"),
-        mocker.Mock(status_code=200, json=lambda: {"success": True})
-    ]
-    
-    # Act
-    result = api_client.make_request("/test", {"data": "test"})
-    
-    # Assert
-    assert result["success"] is True
-    assert mock_request.call_count == 2
-```
-
-### Mocking External Services
-```python
-@pytest.fixture
-def mock_notion_client(mocker):
-    """Mock Notion client for testing."""
-    client = mocker.Mock()
-    client.databases.query.return_value = {
-        "results": [
-            {
-                "id": "123",
-                "properties": {
-                    "Name": {"title": [{"plain_text": "Test Page"}]}
-                }
-            }
-        ]
+    protected function setUp(): void
+    {
+        $this->dateHelper = new DateHelper();
     }
-    return client
 
-def test_notion_service_processes_response_correctly(mock_notion_client):
-    """Test that NotionService correctly processes API response."""
-    # Arrange
-    service = NotionService(client=mock_notion_client)
-    database_id = "test-db-id"
-    
-    # Act
-    result = service.get_pages(database_id)
-    
-    # Assert
-    assert len(result) == 1
-    assert result[0]["name"] == "Test Page"
-    mock_notion_client.databases.query.assert_called_once_with(
-        database_id=database_id
-    )
+    public function testGetCurrentDateReturnsDateTimeImmutable(): void
+    {
+        $date = $this->dateHelper->getCurrentDate();
+
+        $this->assertInstanceOf(\DateTimeImmutable::class, $date);
+    }
+
+    public function testInvalidTimezoneThrowsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid timezone: NotARealTimezone');
+
+        new DateHelper('NotARealTimezone');
+    }
+}
 ```
 
-## Parameterized Tests
+### Patterns
+- **Use `setUp()` / `tearDown()`** for common test scaffolding
+- **Test both happy path and error cases**
+- **Use `expectException()` and `expectExceptionMessage()`** for exception testing
+- **Clean up side effects** in `tearDown()` (temp files, directories, etc.)
+- **Use type declarations** on test properties and return types (`: void`)
 
-### Testing Multiple Scenarios
-```python
-@pytest.mark.parametrize("email,expected_valid", [
-    ("test@example.com", True),
-    ("user@domain.org", True),
-    ("invalid-email", False),
-    ("@domain.com", False),
-    ("user@", False),
-    ("", False),
-])
-def test_email_validation(email, expected_valid):
-    """Test email validation with various inputs."""
-    from myproject.utils import is_valid_email
-    
-    result = is_valid_email(email)
-    assert result == expected_valid
+### Testing Build Processes
+When testing code that produces filesystem output:
+- Use a **separate output directory** (e.g. `dist-test`) to avoid interfering with real builds
+- **Clean up** in both `setUp()` and `tearDown()`
+- **Include the source file** via `require_once` and instantiate with test parameters
 
-@pytest.mark.parametrize("age,expected_category", [
-    (5, "child"),
-    (12, "child"),
-    (16, "teen"),
-    (18, "adult"),
-    (65, "senior"),
-    (80, "senior"),
-])
-def test_age_categorization(age, expected_category):
-    """Test age categorization logic."""
-    from myproject.utils import categorize_age
-    
-    result = categorize_age(age)
-    assert result == expected_category
-```
-
-### Complex Parameter Combinations
-```python
-@pytest.mark.parametrize("user_type,permissions,expected_access", [
-    ("admin", ["read", "write", "delete"], True),
-    ("user", ["read", "write"], False),
-    ("guest", ["read"], False),
-    ("admin", [], False),  # Admin with no permissions
-])
-def test_access_control(user_type, permissions, expected_access):
-    """Test access control logic."""
-    from myproject.auth import check_delete_access
-    
-    user = User(type=user_type, permissions=permissions)
-    result = check_delete_access(user)
-    assert result == expected_access
-```
-
-## Test Coverage
-
-### Coverage Configuration
-```ini
-# pytest.ini
-[tool:pytest]
-testpaths = tests
-python_files = test_*.py
-python_classes = Test*
-python_functions = test_*
-addopts = 
-    --cov=src
-    --cov-report=html
-    --cov-report=term-missing
-    --cov-fail-under=80
-markers =
-    slow: marks tests as slow
-    integration: marks tests as integration tests
-    unit: marks tests as unit tests
-```
-
-### Coverage Commands
-```bash
-# Run tests with coverage
-pytest --cov=src
-
-# Generate HTML coverage report
-pytest --cov=src --cov-report=html
-
-# Show missing lines in terminal
-pytest --cov=src --cov-report=term-missing
-
-# Fail if coverage below threshold
-pytest --cov=src --cov-fail-under=85
-```
-
-## Test Categories and Markers
-
-### Using pytest Markers
-```python
-import pytest
-
-@pytest.mark.unit
-def test_user_model_validation():
-    """Unit test for user model validation."""
-    pass
-
-@pytest.mark.integration
-def test_database_connection():
-    """Integration test for database operations."""
-    pass
-
-@pytest.mark.slow
-def test_bulk_data_processing():
-    """Slow test that processes large datasets."""
-    pass
-
-@pytest.mark.api
-def test_external_api_integration():
-    """Test external API integration."""
-    pass
-```
-
-### Running Specific Test Categories
-```bash
-# Run only unit tests
-pytest -m unit
-
-# Run integration tests
-pytest -m integration
-
-# Skip slow tests
-pytest -m "not slow"
-
-# Run API tests only
-pytest -m api
-```
-
-## Error and Exception Testing
-
-### Testing Expected Exceptions
-```python
-def test_divide_by_zero_raises_zero_division_error():
-    """Test that division by zero raises appropriate error."""
-    from myproject.calculator import divide
-    
-    with pytest.raises(ZeroDivisionError):
-        divide(10, 0)
-
-def test_invalid_user_id_raises_validation_error_with_message():
-    """Test specific error message for invalid user ID."""
-    service = UserService()
-    
-    with pytest.raises(ValidationError, match="User ID must be positive"):
-        service.get_user(-1)
-
-def test_api_timeout_raises_timeout_error():
-    """Test API timeout handling."""
-    api_client = APIClient(timeout=0.1)
-    
-    with pytest.raises(TimeoutError) as exc_info:
-        api_client.slow_operation()
-    
-    assert "Request timed out" in str(exc_info.value)
-```
-
-## Performance Testing
-
-### Basic Performance Tests
-```python
-import time
-import pytest
-
-def test_user_creation_performance():
-    """Test that user creation completes within reasonable time."""
-    service = UserService()
-    
-    start_time = time.time()
-    user = service.create_user("test@example.com", "Test User")
-    execution_time = time.time() - start_time
-    
-    assert user is not None
-    assert execution_time < 1.0  # Should complete within 1 second
-
-@pytest.mark.slow
-def test_bulk_operation_performance(sample_users):
-    """Test bulk operations performance."""
-    service = UserService()
-    
-    start_time = time.time()
-    results = service.bulk_create_users(sample_users)
-    execution_time = time.time() - start_time
-    
-    assert len(results) == len(sample_users)
-    assert execution_time < 5.0  # Should complete within 5 seconds
+```php
+private function buildSite(): void
+{
+    require_once __DIR__ . '/../build.php';
+    $builder = new \SiteBuilder('src', $this->testDistDir);
+    $builder->build();
+}
 ```
 
 ## Best Practices
 
 ### ✅ DO:
-- **Write descriptive test names** that explain the scenario
-- **Use the AAA pattern** (Arrange, Act, Assert) for test structure
-- **Test both happy path and error cases**
-- **Use fixtures** for common test data and setup
-- **Mock external dependencies** to isolate units under test
-- **Aim for high test coverage** (80%+) but focus on quality over quantity
-- **Use parametrized tests** for testing multiple similar scenarios
-- **Keep tests independent** - they should be able to run in any order
+- **Use `failOnRisky` and `failOnWarning`** in phpunit.xml
+- **Group slow/external tests** so the default `composer test` is fast
+- **Use descriptive test method names** that explain the scenario
+- **Clean up filesystem side effects** in tearDown
+- **Type-hint everything** — properties, parameters, return types
+- **Test exception messages**, not just exception types
 
 ### ❌ DON'T:
-- **Write tests that depend on external services** in unit tests
-- **Test implementation details** - test behavior, not internal structure
-- **Write overly complex tests** - if a test is hard to understand, simplify it
-- **Skip edge cases** - test boundary conditions and error scenarios
-- **Use real databases or files** in unit tests - use mocks or in-memory alternatives
-- **Ignore failing tests** - fix them immediately or remove them
-- **Test everything** - focus on critical business logic and public APIs
+- **Hit the network in default test runs** — isolate network tests in a group
+- **Leave test artifacts** (temp dirs, files) after test runs
+- **Write tests without assertions** — PHPUnit will flag these as risky
+- **Couple tests to each other** — each test should be independently runnable
 
-**Remember: Good tests serve as documentation, catch regressions, and give confidence when refactoring code.**
 
 ---
 
@@ -3763,80 +2893,32 @@ product_id,name,price,description,stock_count,last_restocked,category,tags,featu
 
 ---
 
-# Rule: 06-pr-summary-standards.md
+# Rule: 06-no-code-in-briefs.md
 
 ---
-id: pr_summary_standards
-description: "Structured pull request summaries with emoji titles and issue-first sourcing approach"
+id: no_code_in_briefs
+description: "Prevents inclusion of code examples in planning or brief-type documents"
 ---
 
-# Pull Request Summary Standards
+# No Code in Briefs
 
-Write short, goal-based PR summaries with emoji titles that help reviewers understand context and changes. Never repeat the diff content.
+When generating **briefs, task drafts, project overviews, or planning docs**, do not include code examples or implementation details.
 
-## Title Format
+## What to avoid
 
-PR titles must start with an emoji prefix:
+- Code examples, snippets, or implementation details
+- Specific syntax or technical implementations
+- Opinionated solutions before exploration begins
 
-- 🌪 **New value** · new feature or major addition
-- 💨 **Enhancement** · improvements to existing features
-- 🧰 **DevX** · developer tooling/workflow changes
-- 💡 **KTLO** · routine maintenance/operations
-- 🚑 **Hotfix** · urgent critical fix
-- 🐛 **Defect** · bug fix for live features
+## What to include instead
 
-**Example title:**
-`💨 Speed up CI by caching pnpm store`
+- Keep content conceptual, requirements-level, or descriptive only
+- Express technical details in plain language, not code
+- Focus on the problem and requirements rather than solutions
 
-## Content Guidelines
+## Rationale
 
-### No Screenshots, Links, or Feature Flags
-- Keep summaries text-only for clarity
-- Avoid external dependencies in PR descriptions
-- Focus on the essential information
-
-### Sourcing Rule for AI
-- **If an issue exists**: Read the issue first, then scan code changes, then write the summary
-- **If no issue**: Infer intent from the code changes
-
-## Required Structure
-
-### Top Line (Issue Reference)
-- If closing an issue: `closes #123`
-- If related only: `relates to #123`
-
-### Three-Section Format
-
-**Goal:** Why this PR exists (1–2 sentences)
-**Scope:** High-level description of what changed (not the diff details)  
-**How to test:** Steps reviewers can follow, with expected result
-
-## Example Summary
-
-```
-closes #123
-
-**Goal:** Reduce CI time to under 8 minutes by caching dependencies.
-**Scope:** Add `actions/cache` keyed to lockfile; no app logic changes.
-**How to test:** Push branch, confirm cache restore in install step, total job < 8 minutes.
-```
-
-## What NOT to Include
-
-- **Don't repeat the diff** - reviewers can see file changes
-- **Don't include rationale** - that goes in the issue or commit messages
-- **Don't list every file changed** - focus on the high-level impact
-- **Don't include implementation details** - stick to the "what" and "why"
-
-## AI Assistant Guidelines
-
-When helping write PR summaries:
-
-1. **Always check for linked issues first** - read the full issue context
-2. **Scan the code diff** - understand the technical changes
-3. **Focus on business impact** - why does this matter to the team/product?
-4. **Keep it scannable** - busy reviewers need quick context
-5. **Make testing actionable** - provide specific steps, not vague suggestions
+The purpose is to avoid opinionated solutions before proper exploration and analysis begins. Planning documents should focus on understanding the problem space and requirements, not prescribing specific technical implementations.
 
 ---
 
@@ -4007,7 +3089,150 @@ Consider setting up:
 
 ---
 
-# Rule: 07-project-templates-standards.md
+# Rule: 07-pr-summary-standards.md
+
+---
+id: pr_summary_standards
+description: "Structured pull request summaries with emoji titles and issue-first sourcing approach"
+---
+
+# Pull Request Summary Standards
+
+Write short, goal-based PR summaries with emoji titles that help reviewers understand context and changes. Never repeat the diff content.
+
+## Title Format
+
+PR titles must start with an emoji prefix:
+
+- 🌪 **New value** · new feature or major addition
+- 💨 **Enhancement** · improvements to existing features
+- 🧰 **DevX** · developer tooling/workflow changes
+- 💡 **KTLO** · routine maintenance/operations
+- 🚑 **Hotfix** · urgent critical fix
+- 🐛 **Defect** · bug fix for live features
+
+**Example title:**
+`💨 Speed up CI by caching pnpm store`
+
+## Content Guidelines
+
+### No Screenshots, Links, or Feature Flags
+- Keep summaries text-only for clarity
+- Avoid external dependencies in PR descriptions
+- Focus on the essential information
+
+### Sourcing Rule for AI
+- **If an issue exists**: Read the issue first, then scan code changes, then write the summary
+- **If no issue**: Infer intent from the code changes
+
+## Required Structure
+
+### Top Line (Issue Reference)
+- If closing an issue: `closes #123`
+- If related only: `relates to #123`
+
+### Three-Section Format
+
+**Goal:** Why this PR exists (1–2 sentences)
+**Scope:** High-level description of what changed (not the diff details)  
+**How to test:** Steps reviewers can follow, with expected result
+
+## Example Summary
+
+```
+closes #123
+
+**Goal:** Reduce CI time to under 8 minutes by caching dependencies.
+**Scope:** Add `actions/cache` keyed to lockfile; no app logic changes.
+**How to test:** Push branch, confirm cache restore in install step, total job < 8 minutes.
+```
+
+## What NOT to Include
+
+- **Don't repeat the diff** - reviewers can see file changes
+- **Don't include rationale** - that goes in the issue or commit messages
+- **Don't list every file changed** - focus on the high-level impact
+- **Don't include implementation details** - stick to the "what" and "why"
+
+## AI Assistant Guidelines
+
+When helping write PR summaries:
+
+1. **Always check for linked issues first** - read the full issue context
+2. **Scan the code diff** - understand the technical changes
+3. **Focus on business impact** - why does this matter to the team/product?
+4. **Keep it scannable** - busy reviewers need quick context
+5. **Make testing actionable** - provide specific steps, not vague suggestions
+
+---
+
+# Rule: 08-directory-organization-philosophy.md
+
+---
+id: directory_organization_philosophy
+description: "Philosophy for organizing directories, configs, and avoiding tool pollution in home directory"
+---
+
+# Directory Organization Philosophy
+
+Maintain clean separation between different types of files and avoid tools that pollute the home directory with unnecessary initialization files.
+
+## ✅ DO
+
+**Directory Structure Principles**
+- Separate configuration files, data files, and applications
+- Use dedicated directories for different purposes: `~/Projects/`, `~/Unito/`, etc.
+- Keep the home directory clean of application-specific files when possible
+- Use `~/.config/` for configuration files that support XDG Base Directory specification
+
+**Project Organization**
+- Use logical directory hierarchies: `~/Projects/personal/`, `~/Unito/work-projects/`
+- Group related projects together by context (work, personal, experiments)
+- Keep project templates and standards consistent across similar projects
+- Document project structure and conventions in README files
+
+**Configuration Management**
+- Store configurations in version-controlled dotfiles
+- Use tools that support clean directory structures (chezmoi, not random dotfile dumps)
+- Separate machine-specific configs from universal configs
+- Keep backup configurations for critical tools
+
+## ❌ DON'T
+
+**Avoid Directory Pollution**
+- Don't use tools that create unnecessary files in home directory (like `warp init` in home)
+- Don't let package managers scatter config files everywhere without organization
+- Don't mix personal and work projects in the same directory structure
+- Don't create deep nested hierarchies that make navigation difficult
+
+**Anti-patterns to Avoid**
+- Don't use tools that force their directory structure on you
+- Don't accept default locations if they create clutter
+- Don't ignore where tools put their files - be intentional about organization
+- Don't let tools create initialization files in places you don't want them
+
+## Integration Points
+
+**With Dotfiles Management**
+- Use chezmoi for version-controlled config files
+- Keep dotfiles repository clean and well-organized
+- Document which configs are managed where
+
+**With Development Tools**
+- Configure tools to use appropriate directories (`~/.config/` when supported)
+- Use project-local configurations when possible
+- Avoid global installations that affect all projects unnecessarily
+
+**With Package Managers**
+- Use virtual environments and project-local dependencies
+- Keep global installations minimal and purposeful
+- Document global dependencies and their purposes
+
+This approach maintains a clean, navigable system while supporting efficient development workflows.
+
+---
+
+# Rule: 08-project-templates-standards.md
 
 ---
 id: project_templates_standards
@@ -4144,128 +3369,6 @@ This approach ensures consistent, high-quality project initialization while redu
 
 ---
 
-# Rule: 08-directory-organization-philosophy.md
-
----
-id: directory_organization_philosophy
-description: "Philosophy for organizing directories, configs, and avoiding tool pollution in home directory"
----
-
-# Directory Organization Philosophy
-
-Maintain clean separation between different types of files and avoid tools that pollute the home directory with unnecessary initialization files.
-
-## ✅ DO
-
-**Directory Structure Principles**
-- Separate configuration files, data files, and applications
-- Use dedicated directories for different purposes: `~/Projects/`, `~/Unito/`, etc.
-- Keep the home directory clean of application-specific files when possible
-- Use `~/.config/` for configuration files that support XDG Base Directory specification
-
-**Project Organization**
-- Use logical directory hierarchies: `~/Projects/personal/`, `~/Unito/work-projects/`
-- Group related projects together by context (work, personal, experiments)
-- Keep project templates and standards consistent across similar projects
-- Document project structure and conventions in README files
-
-**Configuration Management**
-- Store configurations in version-controlled dotfiles
-- Use tools that support clean directory structures (chezmoi, not random dotfile dumps)
-- Separate machine-specific configs from universal configs
-- Keep backup configurations for critical tools
-
-## ❌ DON'T
-
-**Avoid Directory Pollution**
-- Don't use tools that create unnecessary files in home directory (like `warp init` in home)
-- Don't let package managers scatter config files everywhere without organization
-- Don't mix personal and work projects in the same directory structure
-- Don't create deep nested hierarchies that make navigation difficult
-
-**Anti-patterns to Avoid**
-- Don't use tools that force their directory structure on you
-- Don't accept default locations if they create clutter
-- Don't ignore where tools put their files - be intentional about organization
-- Don't let tools create initialization files in places you don't want them
-
-## Integration Points
-
-**With Dotfiles Management**
-- Use chezmoi for version-controlled config files
-- Keep dotfiles repository clean and well-organized
-- Document which configs are managed where
-
-**With Development Tools**
-- Configure tools to use appropriate directories (`~/.config/` when supported)
-- Use project-local configurations when possible
-- Avoid global installations that affect all projects unnecessarily
-
-**With Package Managers**
-- Use virtual environments and project-local dependencies
-- Keep global installations minimal and purposeful
-- Document global dependencies and their purposes
-
-This approach maintains a clean, navigable system while supporting efficient development workflows.
-
----
-
-# Rule: 08-repository-creation-standards.md
-
----
-id: repository_creation_standards
-description: "Standardize repository creation using GitHub CLI with secure defaults"
----
-
-# Repository Creation Standards
-
-When creating or managing repositories, use consistent tooling and secure defaults to ensure proper repository management practices.
-
-## Implementation
-
-### Repository Creation
-✅ **DO:**
-- Use GitHub CLI (`gh` command) for repository operations instead of web interfaces
-- Default to private repositories unless explicitly told otherwise
-- Use `gh repo create repo-name --private` as the standard creation command
-- Only use `--public` when specifically requested by the user
-
-❌ **DON'T:**
-- Create repositories through web interfaces when CLI is available
-- Default to public repositories without explicit user request
-- Use inconsistent tooling across repository operations
-
-### Command Standards
-
-**Repository Creation:**
-```bash
-# Default (secure)
-gh repo create project-name --private
-
-# Only when explicitly requested
-gh repo create project-name --public
-
-# With additional options
-gh repo create project-name --private --description "Project description" --clone
-```
-
-**Repository Management:**
-```bash
-# Consistent use of gh CLI for other operations
-gh repo view
-gh repo clone owner/repo-name
-gh repo fork owner/repo-name
-```
-
-## Rationale
-
-- **Security First**: Private by default reduces risk of accidental data exposure
-- **Tool Consistency**: Using GitHub CLI provides consistent, scriptable repository management
-- **Audit Trail**: CLI operations are easier to track and reproduce than web interface actions
-- **Automation Ready**: CLI-based operations integrate better with scripts and workflows
-
----
-
 # Rule: 09-documentation-first-research.md
 
 ---
@@ -4341,116 +3444,59 @@ Spend at least 30 minutes in official documentation before considering custom so
 
 ---
 
-# Rule: 09-system-maintenance-cleanup.md
+# Rule: 09-repository-creation-standards.md
 
 ---
-id: system_maintenance_cleanup
-description: "Systematic approach to identifying, evaluating, and cleaning up deprecated system configurations and folders"
+id: repository_creation_standards
+description: "Standardize repository creation using GitHub CLI with secure defaults"
 ---
 
-# System Maintenance and Cleanup
+# Repository Creation Standards
 
-Regularly audit and clean up deprecated configurations, unused folders, and outdated system setups to maintain a clean development environment.
+When creating or managing repositories, use consistent tooling and secure defaults to ensure proper repository management practices.
 
-## ✅ DO
+## Implementation
 
-**Regular Audit Process**
-- Review hidden folders in home directory periodically (`ls -la ~ | grep "^\."`)
-- Check for duplicate functionality (e.g., multiple secrets management approaches)
-- Investigate unfamiliar folders before deletion - they may serve active purposes
-- Compare file modification dates to identify potentially deprecated content
-- Look for references in configs before removing directories
+### Repository Creation
+✅ **DO:**
+- Use GitHub CLI (`gh` command) for repository operations instead of web interfaces
+- Default to private repositories unless explicitly told otherwise
+- Use `gh repo create repo-name --private` as the standard creation command
+- Only use `--public` when specifically requested by the user
 
-**Safe Cleanup Methodology**
-- Always create backups before removing configurations: `cp -r ~/.old-config ~/.old-config.backup`
-- Use `find` and `grep` to search for references before deletion
-- Test functionality after removal to ensure nothing breaks
-- Document cleanup decisions for future reference
-- Remove empty directories after migrating contents: `rmdir ~/.empty-folder`
+❌ **DON'T:**
+- Create repositories through web interfaces when CLI is available
+- Default to public repositories without explicit user request
+- Use inconsistent tooling across repository operations
 
-**Configuration Migration**
-- Consolidate similar functionality into single, well-organized locations
-- Update all references when moving configurations
-- Use consistent patterns (e.g., all secrets in `~/.config/secrets/`)
-- Maintain clear documentation of new organization
-- Test all dependent systems after migration
+### Command Standards
 
-**Version Control Integration**
-- Update dotfiles repository to reflect cleanup changes
-- Remove old entries from tracking (e.g., `chezmoi forget ~/.deprecated-config`)
-- Update README files to document new organization
-- Commit cleanup changes with clear messages
-
-## ❌ DON'T
-
-**Avoid These Cleanup Mistakes**
-- Don't remove folders without understanding their purpose
-- Don't assume folders are deprecated based on age alone - check if they're actively used
-- Don't skip searching for references in scripts, configs, and documentation
-- Don't delete unique configurations that don't have clear replacements
-
-**Migration Anti-patterns**
-- Don't leave broken references after moving configurations
-- Don't create multiple competing systems for the same function
-- Don't ignore error messages after cleanup - they indicate missed references
-- Don't rush cleanup - systematic investigation prevents mistakes
-
-## Investigation Workflow
-
-**Identify Potential Cleanup Candidates**
+**Repository Creation:**
 ```bash
-# Find hidden folders/files modified more than 90 days ago
-find ~ -maxdepth 1 -name ".*" -type d -mtime +90
+# Default (secure)
+gh repo create project-name --private
 
-# Look for duplicate functionality
-ls -la ~/.config/ | grep -i secret
-ls -la ~ | grep -i secret
+# Only when explicitly requested
+gh repo create project-name --public
+
+# With additional options
+gh repo create project-name --private --description "Project description" --clone
 ```
 
-**Evaluate Before Removal**
+**Repository Management:**
 ```bash
-# Check for references in common config locations
-grep -r "deprecated-folder" ~/.zshrc ~/.bashrc ~/.config/ ~/.*rc
-
-# Look for recent file access
-find ~/.deprecated-folder -type f -atime -30  # accessed in last 30 days
+# Consistent use of gh CLI for other operations
+gh repo view
+gh repo clone owner/repo-name
+gh repo fork owner/repo-name
 ```
 
-**Safe Removal Process**
-```bash
-# 1. Create backup
-cp -r ~/.deprecated-config ~/.deprecated-config.$(date +%Y%m%d)
+## Rationale
 
-# 2. Remove from version control if tracked
-chezmoi forget ~/.deprecated-config
-
-# 3. Remove actual folder
-rm -rf ~/.deprecated-config
-
-# 4. Test dependent systems
-```
-
-## Common Cleanup Scenarios
-
-**Secrets Management Consolidation**
-- Migrate from multiple secrets locations to single `~/.config/secrets/` structure
-- Update all environment variable references to new paths
-- Remove old secrets directories only after confirming migration success
-- Update documentation to reflect new organization
-
-**Dotfiles Organization**
-- Remove files from dotfiles tracking that are now managed elsewhere
-- Consolidate similar configuration files
-- Clean up `.gitignore` patterns after removing tracked files
-- Update repository documentation
-
-**Tool Migration**
-- Remove old tool configurations after migrating to new tools
-- Update shell aliases and PATH modifications
-- Clean up old scripts and shortcuts
-- Document tool migration decisions
-
-This systematic approach prevents accidental deletion of important configurations while maintaining a clean, organized development environment.
+- **Security First**: Private by default reduces risk of accidental data exposure
+- **Tool Consistency**: Using GitHub CLI provides consistent, scriptable repository management
+- **Audit Trail**: CLI operations are easier to track and reproduce than web interface actions
+- **Automation Ready**: CLI-based operations integrate better with scripts and workflows
 
 ---
 
@@ -4577,7 +3623,179 @@ This approach maintains clean, version-controlled dotfiles while avoiding common
 
 ---
 
-# Rule: 11-implementation-standards.md
+# Rule: 10-system-maintenance-cleanup.md
+
+---
+id: system_maintenance_cleanup
+description: "Systematic approach to identifying, evaluating, and cleaning up deprecated system configurations and folders"
+---
+
+# System Maintenance and Cleanup
+
+Regularly audit and clean up deprecated configurations, unused folders, and outdated system setups to maintain a clean development environment.
+
+## ✅ DO
+
+**Regular Audit Process**
+- Review hidden folders in home directory periodically (`ls -la ~ | grep "^\."`)
+- Check for duplicate functionality (e.g., multiple secrets management approaches)
+- Investigate unfamiliar folders before deletion - they may serve active purposes
+- Compare file modification dates to identify potentially deprecated content
+- Look for references in configs before removing directories
+
+**Safe Cleanup Methodology**
+- Always create backups before removing configurations: `cp -r ~/.old-config ~/.old-config.backup`
+- Use `find` and `grep` to search for references before deletion
+- Test functionality after removal to ensure nothing breaks
+- Document cleanup decisions for future reference
+- Remove empty directories after migrating contents: `rmdir ~/.empty-folder`
+
+**Configuration Migration**
+- Consolidate similar functionality into single, well-organized locations
+- Update all references when moving configurations
+- Use consistent patterns (e.g., all secrets in `~/.config/secrets/`)
+- Maintain clear documentation of new organization
+- Test all dependent systems after migration
+
+**Version Control Integration**
+- Update dotfiles repository to reflect cleanup changes
+- Remove old entries from tracking (e.g., `chezmoi forget ~/.deprecated-config`)
+- Update README files to document new organization
+- Commit cleanup changes with clear messages
+
+## ❌ DON'T
+
+**Avoid These Cleanup Mistakes**
+- Don't remove folders without understanding their purpose
+- Don't assume folders are deprecated based on age alone - check if they're actively used
+- Don't skip searching for references in scripts, configs, and documentation
+- Don't delete unique configurations that don't have clear replacements
+
+**Migration Anti-patterns**
+- Don't leave broken references after moving configurations
+- Don't create multiple competing systems for the same function
+- Don't ignore error messages after cleanup - they indicate missed references
+- Don't rush cleanup - systematic investigation prevents mistakes
+
+## Investigation Workflow
+
+**Identify Potential Cleanup Candidates**
+```bash
+# Find hidden folders/files modified more than 90 days ago
+find ~ -maxdepth 1 -name ".*" -type d -mtime +90
+
+# Look for duplicate functionality
+ls -la ~/.config/ | grep -i secret
+ls -la ~ | grep -i secret
+```
+
+**Evaluate Before Removal**
+```bash
+# Check for references in common config locations
+grep -r "deprecated-folder" ~/.zshrc ~/.bashrc ~/.config/ ~/.*rc
+
+# Look for recent file access
+find ~/.deprecated-folder -type f -atime -30  # accessed in last 30 days
+```
+
+**Safe Removal Process**
+```bash
+# 1. Create backup
+cp -r ~/.deprecated-config ~/.deprecated-config.$(date +%Y%m%d)
+
+# 2. Remove from version control if tracked
+chezmoi forget ~/.deprecated-config
+
+# 3. Remove actual folder
+rm -rf ~/.deprecated-config
+
+# 4. Test dependent systems
+```
+
+## Common Cleanup Scenarios
+
+**Secrets Management Consolidation**
+- Migrate from multiple secrets locations to single `~/.config/secrets/` structure
+- Update all environment variable references to new paths
+- Remove old secrets directories only after confirming migration success
+- Update documentation to reflect new organization
+
+**Dotfiles Organization**
+- Remove files from dotfiles tracking that are now managed elsewhere
+- Consolidate similar configuration files
+- Clean up `.gitignore` patterns after removing tracked files
+- Update repository documentation
+
+**Tool Migration**
+- Remove old tool configurations after migrating to new tools
+- Update shell aliases and PATH modifications
+- Clean up old scripts and shortcuts
+- Document tool migration decisions
+
+This systematic approach prevents accidental deletion of important configurations while maintaining a clean, organized development environment.
+
+---
+
+# Rule: 11-env-var-management.md
+
+---
+id: env_var_management
+description: "Standard patterns for loading environment variables with direnv and .env fallback"
+---
+
+# Environment Variable Management
+
+Support two automatic methods for loading environment variables in every project: direnv (recommended) and `.env` file fallback. No manual `source` or `export` commands needed.
+
+## File Responsibilities
+
+```
+.env.example          — Template. Committed to git. Lists all required vars.
+.env                  — Local values. Gitignored. Never committed.
+.envrc                — direnv config. Committed. Loads .env then secrets.
+Makefile              — Loads .env as fallback if direnv isn't active.
+```
+
+## Precedence (highest wins)
+
+1. Shell environment (already exported vars)
+2. direnv / secret manager overrides
+3. `.env` file values
+
+## ✅ DO
+
+**direnv Setup (Primary)**
+- Use `dotenv_if_exists` in `.envrc` to load `.env` when present
+- Override with secrets from a secrets manager (e.g. `export-secret`) when available
+- Require only `direnv allow` for first-time setup
+
+**`.env` Fallback (Secondary)**
+- Provide `.env.example` with all required vars and comments
+- Conditionally load `.env` in Makefile only when env vars aren't already set
+- Ensure all workflows function with just a `.env` file for contributors without direnv
+
+**Adding a New Variable**
+- Add to `.env.example` with an empty value and a comment
+- Add the `export` line to `.envrc`
+- Add a `ifndef` warning block in Makefile if it depends on it
+- Document it in the project README
+
+**Naming Conventions**
+- Terraform variables: `TF_VAR_<variable_name>` — prefix uppercase, variable name lowercase (e.g. `TF_VAR_cloudflare_api_token`)
+- Provider/tool credentials: Use the name the tool expects natively (e.g. `CLOUDFLARE_API_TOKEN`, `AWS_ACCESS_KEY_ID`)
+- Project-specific: `SCREAMING_SNAKE_CASE` (e.g. `R2_ENDPOINT`)
+
+## ❌ DON'T
+
+- Don't commit `.env` — it's gitignored
+- Don't pass secrets as CLI arguments — use env vars that tools read natively (`TF_VAR_*`, `AWS_*`), not `-var` or `-backend-config` flags
+- Don't let `.env.example` drift from `.envrc` — every variable should appear in both
+- Don't require direnv — all workflows must work with just `.env`
+
+
+---
+
+# Rule: 12-implementation-standards.md
 
 ---
 id: implementation_standards
@@ -4644,7 +3862,7 @@ Solutions should prioritize maintainability, readability, and alignment with eco
 
 ---
 
-# Rule: 12-inline-comments-guidelines.md
+# Rule: 13-inline-comments-guidelines.md
 
 ---
 id: inline_comments_guidelines
@@ -4897,7 +4115,99 @@ $user_permissions = $this->get_bulk_user_permissions($user_ids);
 
 ---
 
-# Rule: 13-package-management-standards.md
+# Rule: 14-local-ci-act.md
+
+---
+id: local_ci_act
+description: "Standards for running GitHub Actions locally with act to catch CI failures before pushing"
+---
+
+# Local CI Testing with act
+
+Use [`act`](https://github.com/nektos/act) to run GitHub Actions workflows locally in Docker containers. Catch CI failures before pushing and avoid burning Actions minutes.
+
+## Prerequisites
+
+- Docker Desktop (or compatible runtime like Colima) running
+- `act` installed: `brew install act`
+
+## Project Setup
+
+### `.actrc` (commit this)
+
+Create `.actrc` in the project root with default flags:
+
+```
+-P ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-24.04
+--container-architecture linux/amd64
+```
+
+- Use `catthehacker/ubuntu:act-*` images — purpose-built for act, much smaller than official runner images
+- `--container-architecture linux/amd64` is required on Apple Silicon Macs
+- Available tags: `act-22.04`, `act-24.04`. Use `full-*` variants only if `act-*` is missing tools your workflow needs
+
+### Makefile Target (recommended)
+
+Wrap `act` invocations so the team has a single command:
+
+```makefile
+test-ci:
+	@command -v act >/dev/null 2>&1 || { echo "act not installed. Run: brew install act"; exit 1; }
+	act pull_request -W .github/workflows/ci.yml \
+		--secret TOKEN_A="$$TOKEN_A" \
+		--secret TOKEN_B="$$TOKEN_B"
+```
+
+The `$$` escaping passes shell variables through Make's parser. Secrets come from direnv-loaded env vars — never from committed files.
+
+## ✅ DO
+
+**Secrets Handling**
+- Pass secrets from env vars via `--secret` flags — never store in committed files
+- Use `--secret` for `${{ secrets.X }}` references; use `--env` for `${{ env.X }}` references
+- Add `.env`, `.secrets` to `.gitignore`
+- For `GITHUB_TOKEN`, pass manually: `--secret GITHUB_TOKEN="$(gh auth token)"`
+
+**Workflow Compatibility**
+- Pin actions by SHA, not tag: `uses: actions/checkout@<sha> # v4.3.1`
+- Use `if: ${{ !env.ACT }}` to skip steps that won't work locally (artifact uploads, PR comments, caching)
+- Keep secrets generic — map repo-specific secret names to generic env vars in the workflow's `env:` block
+
+**Running Workflows**
+- Use `act <event> -n` for dry runs before real runs
+- Use `act <event> -W .github/workflows/<file>.yml` to target specific workflows
+- Use `act <event> -j <job>` to run a single job
+- Use `act workflow_dispatch --input action=plan` to pass dispatch inputs
+
+## ❌ DON'T
+
+- Don't use `ubuntu-latest=ubuntu:24.04` images — missing runner tooling
+- Don't use deprecated `nektos/act-environments-ubuntu:18.04` images
+- Don't expect `actions/cache`, service containers, or `workflow_run` events to work
+- Don't store secrets in `.actrc` or any committed file
+
+## Troubleshooting
+
+- **Image not found / slow first run**: First pull is ~1.2GB, one-time cost. Ensure Docker is running.
+- **exec format error (Apple Silicon)**: Add `--container-architecture linux/amd64` to `.actrc`
+- **Fails in act but works on GitHub**: Check for GitHub API dependencies, unsupported features, or missing tools in `act-*` images
+- **Permission denied on scripts**: Add `chmod +x` before running or use `bash script.sh`
+- **Secrets not available**: Confirm `--secret` (not `--env`) for `${{ secrets.X }}` references
+- **Auth errors**: Run `direnv allow` to reload env vars
+
+## Debugging
+
+```bash
+act pull_request -v          # verbose output
+act pull_request -v -v       # very verbose (Docker commands)
+act pull_request --reuse     # keep containers after failure for inspection
+docker exec -it <id> bash    # shell into container
+```
+
+
+---
+
+# Rule: 15-package-management-standards.md
 
 ---
 id: package_management_standards
@@ -5002,7 +4312,7 @@ This approach ensures consistent, reproducible development environments while ke
 
 ---
 
-# Rule: 14-secrets-management-direnv.md
+# Rule: 16-secrets-management-direnv.md
 
 ---
 id: secrets_management_direnv
@@ -5125,7 +4435,95 @@ This approach provides project-isolation while maintaining organized, secure sec
 
 ---
 
-# Rule: 15-simple-solutions-principle.md
+# Rule: 17-secrets-storage-standards.md
+
+---
+id: secrets_storage_standards
+description: "Standard hierarchy and naming conventions for organizing secrets across projects and environments"
+---
+
+# Secrets Storage Standards
+
+Define a consistent structure for storing and organizing credentials, API keys, tokens, and other secrets. These conventions are backend-agnostic — they apply whether using `pass`, AWS Secrets Manager, 1Password, Vault, or any other system.
+
+## Path Hierarchy
+
+Organize secrets using a shallow, predictable structure:
+
+```
+<context>/<service>/<credential-type>
+```
+
+- **Context**: Top-level grouping by business domain or environment
+- **Service**: The external service or internal system
+- **Credential type**: The specific secret
+
+Keep depth to 2–3 levels. Deeper nesting creates friction without adding clarity.
+
+## Standard Credential Type Names
+
+Use these consistently across all services:
+
+- `api-key` — general-purpose API key
+- `access-token` — OAuth or bearer token
+- `refresh-token` — OAuth refresh token
+- `client-id` — OAuth client identifier
+- `client-secret` — OAuth client secret
+- `access-key-id` — AWS-style access key identifier
+- `secret-access-key` — AWS-style secret key
+- `personal-token` — personal access token (e.g. GitHub PAT)
+- `password` — account password
+- `webhook-secret` — webhook signing secret
+- `signing-key` — cryptographic signing key
+- `connection-string` — database or service connection string
+- `service-account` — service account credential (often a JSON file path)
+
+If a service has only one credential, the type alone is sufficient (e.g. `work/openai/api-key`).
+
+## Context Groupings
+
+- `work/` — credentials for work projects and internal services
+- `personal/` — personal accounts and side projects
+- `infrastructure/` — cloud providers, CI/CD, hosting, DNS
+- `shared/` — team-shared credentials (use sparingly)
+
+## ✅ DO
+
+**Naming**
+- Use **lowercase** throughout
+- Use **hyphens** to separate words (not underscores or camelCase)
+- Use **explicit credential types** from the standard list above
+- Make names self-documenting — someone unfamiliar with the project should understand the purpose
+
+**Organization**
+- One secret per entry — don't combine multiple values in a single entry
+- Use the standard credential type names before inventing new ones
+- Preserve the `context/service/credential-type` structure regardless of backend
+
+**Usage in Scripts**
+- Export secrets via env vars: `export OPENAI_API_KEY=$(pass show work/openai/api-key)`
+- Use `pass show <context>/<service>/` to list all secrets for a service
+
+## ❌ DON'T
+
+- Don't store secrets in version control — not in code, `.env` files, or config files
+- Don't nest deeper than 3 levels
+- Don't duplicate secrets across contexts — pick one location and reference it
+- Don't call everything `key` — use the specific credential type name
+- Don't skip documentation for non-obvious secrets
+
+## Migration
+
+When migrating between backends:
+- Preserve the `context/service/credential-type` path structure
+- Map paths directly to the new system
+- Update retrieval commands in scripts and `.envrc` files
+- Verify all references resolve after migration
+
+
+---
+
+# Rule: 18-simple-solutions-principle.md
 
 ---
 id: simple_solutions_principle
@@ -5235,7 +4633,7 @@ The best code is the code you don't have to write.
 
 ---
 
-# Rule: 16-systematic-code-crafting.md
+# Rule: 19-systematic-code-crafting.md
 
 ---
 id: systematic_code_crafting
@@ -5352,7 +4750,7 @@ Build solutions incrementally with verification at every step, ensuring each com
 
 ---
 
-# Rule: 17-systematic-file-operations.md
+# Rule: 20-systematic-file-operations.md
 
 ---
 id: systematic_file_operations
@@ -5434,7 +4832,7 @@ This systematic approach ensures reliable, predictable file operations while min
 
 ---
 
-# Rule: 18-tooling-parity.md
+# Rule: 21-tooling-parity.md
 
 ---
 id: tooling_parity

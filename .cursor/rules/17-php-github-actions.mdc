@@ -1,0 +1,211 @@
+---
+id: php_github_actions
+description: "GitHub Actions patterns for PHP projects using shivammathur/setup-php"
+---
+
+# PHP in GitHub Actions
+
+Standards for setting up PHP in GitHub Actions workflows using `shivammathur/setup-php`.
+
+## Setup Action
+
+Use **[shivammathur/setup-php](https://github.com/shivammathur/setup-php)** (`v2`) to install PHP in all workflows.
+
+### Pin by Commit SHA
+Always pin the action by full commit SHA, not by tag:
+
+```yaml
+# ✅ Pinned by SHA with version comment
+uses: shivammathur/setup-php@d59004228537ca90c8dca680592a08a675bf52b6 # v2
+
+# ❌ Pinned by tag (vulnerable to tag mutation)
+uses: shivammathur/setup-php@v2
+```
+
+This applies to **all** third-party actions (`actions/checkout`, `actions/cache`, `actions/upload-pages-artifact`, etc.).
+
+### Default Configuration
+- **PHP version**: `'8.5'` (latest stable — keep this updated)
+- **Tools**: `composer:v2` (always specify Composer v2 explicitly)
+- **Extensions**: only add what the project needs (e.g. `intl` for date/locale handling)
+
+## Composite Action Pattern
+
+Extract shared PHP setup into a **reusable composite action** at `.github/actions/setup-php-project/action.yml`:
+
+```yaml
+name: Setup PHP Project
+description: Install PHP, cache Composer, and install dependencies
+
+inputs:
+  php-version:
+    description: PHP version to install
+    required: false
+    default: '8.5'
+  php-extensions:
+    description: Space-separated list of PHP extensions
+    required: false
+    default: ''
+  php-tools:
+    description: Comma-separated list of PHP tools
+    required: false
+    default: 'composer:v2'
+  composer-install-args:
+    description: Extra arguments for composer install
+    required: false
+    default: '--prefer-dist --no-progress'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup PHP
+      uses: shivammathur/setup-php@d59004228537ca90c8dca680592a08a675bf52b6 # v2
+      with:
+        php-version: ${{ inputs.php-version }}
+        tools: ${{ inputs.php-tools }}
+        extensions: ${{ inputs.php-extensions }}
+
+    - name: Get Composer cache directory
+      id: composer-cache
+      shell: bash
+      run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+    - name: Cache Composer dependencies
+      if: ${{ !env.ACT }}
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-composer-
+
+    - name: Install dependencies
+      shell: bash
+      run: composer install ${{ inputs.composer-install-args }}
+```
+
+### Using the Composite Action
+Reference it from workflow jobs:
+
+```yaml
+steps:
+  - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+  - name: Setup PHP project
+    uses: ./.github/actions/setup-php-project
+
+  # Override defaults when needed:
+  - name: Setup PHP project (with extensions and extra tools)
+    uses: ./.github/actions/setup-php-project
+    with:
+      php-extensions: intl
+      php-tools: 'composer:v2, cs2pr'
+```
+
+## Composer Caching
+
+- **Cache the Composer download directory**, not `vendor/` — this caches downloaded packages while still respecting lock file changes
+- **Key on `composer.lock` hash** for exact cache hits
+- **Include a fallback restore key** (`${{ runner.os }}-composer-`) for partial cache hits
+- **Skip caching when running locally with `act`** via `if: ${{ !env.ACT }}`
+
+## CI Tools
+
+### cs2pr
+Install `cs2pr` alongside Composer to convert PHPCS checkstyle output into GitHub PR annotations:
+
+```yaml
+php-tools: 'composer:v2, cs2pr'
+```
+
+Then pipe PHPCS output:
+
+```yaml
+- name: Run PHP_CodeSniffer
+  run: vendor/bin/phpcs --report=checkstyle -q | cs2pr
+```
+
+### PHPStan GitHub Format
+Use `--error-format=github` to get inline annotations:
+
+```yaml
+- name: Run PHPStan
+  run: composer analyse -- --error-format=github
+```
+
+## Workflow Patterns
+
+### Separate CI Jobs
+Split quality checks into **parallel jobs** for faster feedback:
+
+```yaml
+jobs:
+  lint:
+    name: Lint (PHP_CodeSniffer)
+    # ...
+  analyse:
+    name: Static Analysis (PHPStan)
+    # ...
+  test:
+    name: Tests (PHPUnit)
+    # ...
+  build-check:
+    name: Build Check
+    needs: [lint, analyse, test]
+    # ...
+```
+
+### Reusable CI via workflow_call
+Allow the CI workflow to be called from other workflows (e.g. build-deploy):
+
+```yaml
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: ['feature/**', 'fix/**']
+  workflow_call:
+```
+
+Then invoke it:
+
+```yaml
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+```
+
+### Timezone in CI
+When tests depend on date/time, set `TZ` explicitly:
+
+```yaml
+env:
+  TZ: America/Toronto
+```
+
+### Permissions
+Always set minimal permissions:
+
+```yaml
+permissions:
+  contents: read
+```
+
+## Best Practices
+
+### ✅ DO:
+- **Pin all third-party actions by SHA** with a version comment
+- **Use a composite action** to avoid duplicating PHP setup across jobs
+- **Cache Composer's download directory**, not `vendor/`
+- **Use `cs2pr`** for PHPCS PR annotations
+- **Use `--error-format=github`** for PHPStan PR annotations
+- **Set `TZ` explicitly** when tests involve dates
+- **Use `workflow_call`** to share CI across workflows
+
+### ❌ DON'T:
+- **Pin actions by tag** — tags can be force-pushed
+- **Duplicate setup steps** across multiple jobs — extract a composite action
+- **Cache `vendor/`** directly — this can cause stale dependency issues
+- **Skip the `!env.ACT` guard** on cache steps if you use `act` for local testing

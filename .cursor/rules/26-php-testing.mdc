@@ -1,0 +1,172 @@
+---
+id: php_testing
+description: "PHPUnit testing standards, configuration, and test organization"
+---
+
+# PHP Testing Standards
+
+PHPUnit testing standards, configuration patterns, and test organization.
+
+## Framework
+
+Use **PHPUnit 10+** as the testing framework.
+
+## PHPUnit Configuration
+
+Configure via `phpunit.xml` in the project root:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         failOnRisky="true"
+         failOnWarning="true">
+    <testsuites>
+        <testsuite name="Test Suite">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+        <exclude>
+            <directory>src/partials</directory>
+        </exclude>
+    </source>
+</phpunit>
+```
+
+### Key Settings
+- **`failOnRisky="true"`** — fail on tests that don't assert anything or have other risky behavior
+- **`failOnWarning="true"`** — fail on PHPUnit warnings (deprecations, etc.)
+- **`bootstrap="vendor/autoload.php"`** — use Composer autoloader
+- **Exclude partials** from code coverage (they are template fragments, not testable units)
+
+## Test Groups
+
+Use PHPUnit `@group` annotations to categorize tests that should run separately:
+
+```php
+/**
+ * @group html-validation
+ */
+class HtmlValidationTest extends TestCase { }
+
+/**
+ * @group network
+ */
+class UrlValidationTest extends TestCase { }
+```
+
+### Running Groups Selectively
+```bash
+# Run all tests except slow/external groups
+vendor/bin/phpunit --exclude-group=html-validation,network
+
+# Run only HTML validation tests
+vendor/bin/phpunit --group=html-validation
+
+# Run only network-dependent tests
+vendor/bin/phpunit --group=network
+```
+
+Wire these into Composer scripts:
+
+```json
+{
+    "test": ["@build", "vendor/bin/phpunit --exclude-group=html-validation,network"],
+    "test:html": "vendor/bin/phpunit --group=html-validation",
+    "test:network": "vendor/bin/phpunit --group=network"
+}
+```
+
+## Test Organization
+
+### Directory Structure
+```
+tests/
+├── BuildTest.php              # Build process tests
+├── DateHelperTest.php         # Unit tests for helpers
+├── HtmlValidationTest.php     # HTML output validation (grouped)
+└── UrlValidationTest.php      # External URL checks (grouped)
+```
+
+### Naming Conventions
+- Test files: `{ClassName}Test.php`
+- Test methods: `test{DescriptiveBehavior}` — e.g. `testParseDateWithInvalidFormatThrowsException`
+- Use camelCase for method names (PSR convention)
+
+## Writing Tests
+
+### Test Structure
+```php
+namespace YourNamespace\Tests;
+
+use PHPUnit\Framework\TestCase;
+
+class DateHelperTest extends TestCase
+{
+    private DateHelper $dateHelper;
+
+    protected function setUp(): void
+    {
+        $this->dateHelper = new DateHelper();
+    }
+
+    public function testGetCurrentDateReturnsDateTimeImmutable(): void
+    {
+        $date = $this->dateHelper->getCurrentDate();
+
+        $this->assertInstanceOf(\DateTimeImmutable::class, $date);
+    }
+
+    public function testInvalidTimezoneThrowsException(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid timezone: NotARealTimezone');
+
+        new DateHelper('NotARealTimezone');
+    }
+}
+```
+
+### Patterns
+- **Use `setUp()` / `tearDown()`** for common test scaffolding
+- **Test both happy path and error cases**
+- **Use `expectException()` and `expectExceptionMessage()`** for exception testing
+- **Clean up side effects** in `tearDown()` (temp files, directories, etc.)
+- **Use type declarations** on test properties and return types (`: void`)
+
+### Testing Build Processes
+When testing code that produces filesystem output:
+- Use a **separate output directory** (e.g. `dist-test`) to avoid interfering with real builds
+- **Clean up** in both `setUp()` and `tearDown()`
+- **Include the source file** via `require_once` and instantiate with test parameters
+
+```php
+private function buildSite(): void
+{
+    require_once __DIR__ . '/../build.php';
+    $builder = new \SiteBuilder('src', $this->testDistDir);
+    $builder->build();
+}
+```
+
+## Best Practices
+
+### ✅ DO:
+- **Use `failOnRisky` and `failOnWarning`** in phpunit.xml
+- **Group slow/external tests** so the default `composer test` is fast
+- **Use descriptive test method names** that explain the scenario
+- **Clean up filesystem side effects** in tearDown
+- **Type-hint everything** — properties, parameters, return types
+- **Test exception messages**, not just exception types
+
+### ❌ DON'T:
+- **Hit the network in default test runs** — isolate network tests in a group
+- **Leave test artifacts** (temp dirs, files) after test runs
+- **Write tests without assertions** — PHPUnit will flag these as risky
+- **Couple tests to each other** — each test should be independently runnable
