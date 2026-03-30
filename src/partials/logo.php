@@ -17,10 +17,10 @@ function wts_render_logo(string $lang, string $site = 'default'): void
     if ($site === 'usa') {
         $href = 'https://usa.standarddoors.com/';
         $logo = 'assets/logos/LogoStandardColourEN2024.png';
-    } elseif ($site === 'rona-en'){
+    } elseif ($site === 'rona-en') {
         $href = 'https://nuancedoors.com/';
         $logo = 'assets/logos/NuanceLogo2024.png';
-    } elseif ($site === 'rona-fr'){
+    } elseif ($site === 'rona-fr') {
         $href = 'https://portesnuance.com/';
         $logo = 'assets/logos/NuanceLogo2024.png';
     } elseif ($lang === 'fr') {
