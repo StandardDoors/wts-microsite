@@ -28,7 +28,7 @@ function wts_render_message_banner(string $lang, bool $isDev): void
         echo wts_message_banner_full('en');
         return;
     }
-    
+
     // Show full banner before first expiry date
     if ($dateHelper->isBeforeDate(WTS_BANNER_EXPIRY_FULL)) {
         if ($lang === 'bi') {
