@@ -1,6 +1,6 @@
 <?php
 
-$pageTitle = 'WTS Home Tab Bilingual';
+$pageTitle = 'WTS Home Tab Dev Bilingual';
 $lang = 'bi';
 include 'partials/header.php';
 
