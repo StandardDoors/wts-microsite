@@ -22,7 +22,7 @@ function wts_render_logo(string $lang, string $site = 'default'): void
         $logo = 'assets/logos/NuanceLogo2024.png';
     } elseif ($site === 'rona-fr'){
         $href = 'https://portesnuance.com/';
-        $logo = 'assets/logos/NuanceLogo2024.png'; 
+        $logo = 'assets/logos/NuanceLogo2024.png';
     } elseif ($lang === 'fr') {
         $href = 'https://standarddoors.com/fr/';
         $logo = 'assets/logos/LogoStandardColourFR2024.png';
