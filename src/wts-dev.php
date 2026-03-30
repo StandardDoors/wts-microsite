@@ -1,7 +1,7 @@
 <?php
 
 $pageTitle = 'WTS Home Tab Dev Bilingual';
-$lang = 'bi';
+$lang = 'dev-bi';
 include 'partials/header.php';
 
 include_once 'partials/logo.php';
