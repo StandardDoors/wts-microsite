@@ -34,7 +34,7 @@ function wts_render_message_banner(string $lang, string $site): void
         if ($lang === 'bi') {
             echo wts_message_banner_full('fr');
             echo wts_message_banner_full('en');
-        } elseif ($lang !== 'bi' && $site !== 'dev') {
+        } elseif ($lang !== 'bi') {
             echo wts_message_banner_full($lang);
         }
         return;
