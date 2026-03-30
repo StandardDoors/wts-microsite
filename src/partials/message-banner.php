@@ -15,8 +15,8 @@ require_once __DIR__ . '/../Helpers/DateHelper.php';
 use WTS\Helpers\DateHelper;
 
 // Banner expiry dates (YYYY-MM-DD format)
-define('WTS_BANNER_EXPIRY_FULL', '2026-01-05');
-define('WTS_BANNER_EXPIRY_SHORT', '2026-01-12');
+define('WTS_BANNER_EXPIRY_FULL', '2026-04-06');
+define('WTS_BANNER_EXPIRY_SHORT', '2026-04-06');
 
 function wts_render_message_banner(string $lang, bool $isDev): void
 {
