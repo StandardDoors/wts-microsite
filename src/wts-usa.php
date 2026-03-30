@@ -3,6 +3,7 @@
 $pageTitle = 'WTS Home Tab EN';
 $lang = 'en';
 $site = 'usa';
+$isDev = False;
 include 'partials/header.php';
 
 include_once 'partials/logo.php';
