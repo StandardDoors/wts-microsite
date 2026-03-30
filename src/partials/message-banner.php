@@ -18,16 +18,23 @@ use WTS\Helpers\DateHelper;
 define('WTS_BANNER_EXPIRY_FULL', '2026-01-05');
 define('WTS_BANNER_EXPIRY_SHORT', '2026-01-12');
 
-function wts_render_message_banner(string $lang): void
+function wts_render_message_banner(string $lang, string $site): void
 {
     $dateHelper = new DateHelper();
 
+    // If dev site, then ignore dates
+    if ($site === 'dev') {
+        echo wts_message_banner_full('fr');
+        echo wts_message_banner_full('en');
+        return;
+    }
+    
     // Show full banner before first expiry date
     if ($dateHelper->isBeforeDate(WTS_BANNER_EXPIRY_FULL)) {
         if ($lang === 'bi') {
             echo wts_message_banner_full('fr');
             echo wts_message_banner_full('en');
-        } else {
+        } elseif ($lang !== 'bi' && $site !== 'dev') {
             echo wts_message_banner_full($lang);
         }
         return;
@@ -96,8 +103,8 @@ function wts_message_banner_short(string $lang): string
     } else {
         ?>
         <div class="centerimage">
-            <h1 class="redtext">*** Winter Vacation 2025-26 ***</h3> 
-            <h2>Note that our regular shipping schedule will resume on January 12<sup>th</sup>, 2026.</h3>
+            <h1 class="redtext">*** Winter Vacation 2025-26 ***</h1> 
+            <h2>Note that our regular shipping schedule will resume on January 12<sup>th</sup>, 2026.</h2>
             <h3>The entire team at STANDARD would like to thank you for your continued support and wish you Happy Holidays and all the best for 2026!</h3>
         </div>
         <?php
