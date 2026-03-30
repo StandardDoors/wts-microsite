@@ -18,12 +18,12 @@ use WTS\Helpers\DateHelper;
 define('WTS_BANNER_EXPIRY_FULL', '2026-01-05');
 define('WTS_BANNER_EXPIRY_SHORT', '2026-01-12');
 
-function wts_render_message_banner(string $lang, string $site): void
+function wts_render_message_banner(string $lang, bool $isDev): void
 {
     $dateHelper = new DateHelper();
 
     // If dev site, then ignore dates
-    if ($site === 'dev') {
+    if ($isDev === true) {
         echo wts_message_banner_full('fr');
         echo wts_message_banner_full('en');
         return;
