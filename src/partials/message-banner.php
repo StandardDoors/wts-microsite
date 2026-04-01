@@ -18,7 +18,7 @@ use WTS\Helpers\DateHelper;
 define('WTS_BANNER_EXPIRY_FULL', '2026-04-06');
 define('WTS_BANNER_EXPIRY_SHORT', '2026-04-06');
 
-function wts_render_message_banner(string $lang, bool $isDev = false): void
+function wts_render_message_banner(string $lang, bool $isDev): void
 {
     $dateHelper = new DateHelper();
 
