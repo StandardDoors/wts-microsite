@@ -2,7 +2,7 @@
 
 $pageTitle = 'WTS Home Tab EN';
 $lang = 'en';
-$isDev = false;
+
 include 'partials/header.php';
 
 include_once 'partials/logo.php';
