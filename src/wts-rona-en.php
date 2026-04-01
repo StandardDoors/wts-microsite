@@ -3,7 +3,7 @@
 $pageTitle = 'WTS RONA Home Tab EN';
 $lang = 'en';
 $site = 'rona-en';
-
+$isDev = false;
 include 'partials/header.php';
 
 include_once 'partials/logo.php';
