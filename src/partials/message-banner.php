@@ -57,17 +57,17 @@ function wts_message_banner_full(string $lang): string
     if ($lang === 'fr') {
         ?>
         <div class="leftalign">
-            <h1 class="redtext">*** Portes Standard sera fermé le 3 avril ***</h1> 
-            <h3>Veuillez prendre note que nos bureaux seront fermés le 3 avril.</h3>  
-            <h3>Nous serons de retour le lundi 6 avril.</h3>
+            <h1 class="redtext">*** Portes Standard sera fermé le lundi 18 mai ***</h1> 
+            <h3>Veuillez noter que nous serons fermés le lundi 18 mai à l’occasion de la fête de la Reine.</h3>  
+            <h3>Nous reprendrons nos heures d’ouverture habituelles le mardi 19 mai. Merci de votre compréhension.</h3>
         </div>
         <?php
     } else {
         ?>
         <div class="leftalign">
-            <h1 class="redtext">*** Standard Doors Will be Closed on April 3rd ***</h1> 
-            <h3>Please note that our offices will be closed on April 3<sup>rd</sup>.</h3>  
-            <h3>We will be back on Monday, April 6<sup>th</sup>.</h3>
+            <h1 class="redtext">*** Standard Doors Will be Closed on Monday, May 18th ***</h1> 
+            <h3>Please note that we will be closed on Monday, May 18<sup>rd</sup>.</h3>  
+            <h3>We will resume regular business hours on Tuesday, May 19<sup>th</sup>. Thank you for your understanding.</h3>
         </div>
         <?php
     }
