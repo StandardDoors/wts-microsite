@@ -15,8 +15,8 @@ require_once __DIR__ . '/../Helpers/DateHelper.php';
 use WTS\Helpers\DateHelper;
 
 // Banner expiry dates (YYYY-MM-DD format)
-define('WTS_BANNER_EXPIRY_FULL', '2026-04-06');
-define('WTS_BANNER_EXPIRY_SHORT', '2026-04-06');
+define('WTS_BANNER_EXPIRY_FULL', '2026-05-19');
+define('WTS_BANNER_EXPIRY_SHORT', '2026-05-19');
 
 function wts_render_message_banner(string $lang, bool $isDev): void
 {
@@ -65,7 +65,7 @@ function wts_message_banner_full(string $lang): string
     } else {
         ?>
         <div class="leftalign">
-            <h1 class="redtext">*** Standard Doors Will be Closed on Monday, May 18th***</h1> 
+            <h1 class="redtext">*** Standard Doors Will be Closed on Monday, May 18th ***</h1> 
             <h3>Please note that we will be closed on Monday, May 18<sup>th</sup>, in observance of Victoria Day.</h3>  
             <h3>We will resume regular business hours on Tuesday, May 19<sup>th</sup>. Thank you for your understanding.</h3>
         </div>
