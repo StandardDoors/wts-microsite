@@ -5,7 +5,7 @@
         <meta http-equiv="refresh" content="3600">
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <title><?php echo $pageTitle ?? 'WTS Home Tab'; ?></title>
-        <link rel="stylesheet" href="/assets/style.css?v=4">
+        <link rel="stylesheet" href="/assets/style.css?v=5">
         <script>
          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
           (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
