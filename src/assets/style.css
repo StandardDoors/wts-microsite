@@ -30,9 +30,15 @@
 
 .banner-warning {
     text-align: center;
-    color: Brown;
+    color: brown;
     background: #fff3cd;
     padding: 20px;
+    display: block;
+}
+
+.banner-warning h1,
+.banner-warning h3 {
+    color: inherit;
 }
 
 .banner-urgent {
@@ -40,6 +46,12 @@
     color: red;
     background: #f8d7da;
     padding: 20px;
+    display: block;
+}
+
+.banner-urgent h1,
+.banner-urgent h3 {
+    color: inherit;
 }
 
 .bluetext{
