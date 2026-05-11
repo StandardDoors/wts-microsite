@@ -33,6 +33,33 @@ function wts_get_banner_messages(): array
         [
             'enabled' => true,
             'start'   => '2026-05-01',
+            'end'     => '2026-05-02',
+
+            'fr' => [
+                'class' => 'leftalign',
+                'title' => '*** Avis important ***',
+                'lines' => [
+                    'Veuillez noter que le réseau sera interrompu aujourd’hui à 16 h 15 pour une durée approximative de 15 à 30 minutes afin d’effectuer des réparations d’urgence.',
+                    'Pendant cette période, tous les appels seront interrompus et les courriels seront temporairement suspendus.',
+                    'Les opérations normales devraient reprendre peu après l’interruption.',
+                    'Merci de votre compréhension.',
+                ],
+            ],
+
+            'en' => [
+                'class' => 'leftalign',
+                'title' => '*** Important Notice ***',
+                'lines' => [
+                    'Please note that the network will go down today at 4:15 PM for approximately 15–30 minutes to conduct emergency repairs.',
+                    'During this time, all calls will be dropped and emails will be temporarily paused.',
+                    'Normal operations are expected to resume shortly after the interruption.',
+                    'Thank you for your understanding.',
+                ],
+            ],
+        ],
+        [
+            'enabled' => true,
+            'start'   => '2026-05-01',
             'end'     => '2026-05-19',
 
             'fr' => [
@@ -50,34 +77,6 @@ function wts_get_banner_messages(): array
                 'lines' => [
                     'Please note that we will be closed on Monday, May 18<sup>th</sup>, in observance of Victoria Day.',
                     'We will resume regular business hours on Tuesday, May 19<sup>th</sup>. Thank you for your understanding.',
-                ],
-            ],
-        ],
-
-        [
-            'enabled' => true,
-            'start'   => '2026-05-01',
-            'end'     => '2026-05-02',
-
-            'fr' => [
-                'class' => 'centerimage',
-                'title' => '*** Avis important ***',
-                'lines' => [
-                    'Veuillez noter que le réseau sera interrompu aujourd’hui à 16 h 15 pour une durée approximative de 15 à 30 minutes afin d’effectuer des réparations d’urgence.',
-                    'Pendant cette période, tous les appels seront interrompus et les courriels seront temporairement suspendus.',
-                    'Les opérations normales devraient reprendre peu après l’interruption.',
-                    'Merci de votre compréhension.',
-                ],
-            ],
-
-            'en' => [
-                'class' => 'centerimage',
-                'title' => '*** Important Notice ***',
-                'lines' => [
-                    'Please note that the network will go down today at 4:15 PM for approximately 15–30 minutes to conduct emergency repairs.',
-                    'During this time, all calls will be dropped and emails will be temporarily paused.',
-                    'Normal operations are expected to resume shortly after the interruption.',
-                    'Thank you for your understanding.',
                 ],
             ],
         ],
