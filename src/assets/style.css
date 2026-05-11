@@ -28,6 +28,20 @@
     color:red;
 }
 
+.banner-warning {
+    text-align: center;
+    color: Brown;
+    background: #fff3cd;
+    padding: 20px;
+}
+
+.banner-urgent {
+    text-align: center;
+    color: red;
+    background: #f8d7da;
+    padding: 20px;
+}
+
 .bluetext{
     color:#00BFFF;
 }
