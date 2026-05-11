@@ -3,7 +3,7 @@
 /**
  * Global message partial
  *
- * This partial is used to globally to display a message on all sites pages.
+ * This partial is used globally to display messages on all site pages.
  *
  * @package WTS
  * @subpackage Global Message
@@ -14,90 +14,174 @@ require_once __DIR__ . '/../Helpers/DateHelper.php';
 
 use WTS\Helpers\DateHelper;
 
-// Banner expiry dates (YYYY-MM-DD format)
-define('WTS_BANNER_EXPIRY_FULL', '2026-05-19');
-define('WTS_BANNER_EXPIRY_SHORT', '2026-05-19');
+/**
+ * Banner messages.
+ *
+ * Date logic:
+ * - start: first day the message can appear
+ * - end: first day the message no longer appears
+ *
+ * Example:
+ * start = 2026-05-01
+ * end   = 2026-05-19
+ *
+ * This means the message shows from May 1 through May 18.
+ */
+function wts_get_banner_messages(): array
+{
+    return [
+        [
+            'enabled' => true,
+            'start'   => '2026-05-01',
+            'end'     => '2026-05-19',
 
+            'fr' => [
+                'class' => 'leftalign',
+                'title' => '*** Portes Standard sera fermé le lundi 18 mai ***',
+                'lines' => [
+                    'Veuillez noter que nous serons fermés le lundi 18 mai à l’occasion de la fête de la Reine.',
+                    'Nous reprendrons nos heures d’ouverture habituelles le mardi 19 mai. Merci de votre compréhension.',
+                ],
+            ],
+
+            'en' => [
+                'class' => 'leftalign',
+                'title' => '*** Standard Doors Will be Closed on Monday, May 18th ***',
+                'lines' => [
+                    'Please note that we will be closed on Monday, May 18<sup>th</sup>, in observance of Victoria Day.',
+                    'We will resume regular business hours on Tuesday, May 19<sup>th</sup>. Thank you for your understanding.',
+                ],
+            ],
+        ],
+
+        [
+            'enabled' => true,
+            'start'   => '2026-05-01',
+            'end'     => '2026-05-02',
+
+            'fr' => [
+                'class' => 'centerimage',
+                'title' => '*** Avis important ***',
+                'lines' => [
+                    'Veuillez noter que le réseau sera interrompu aujourd’hui à 16 h 15 pour une durée approximative de 15 à 30 minutes afin d’effectuer des réparations d’urgence.',
+                    'Pendant cette période, tous les appels seront interrompus et les courriels seront temporairement suspendus.',
+                    'Les opérations normales devraient reprendre peu après l’interruption.',
+                    'Merci de votre compréhension.',
+                ],
+            ],
+
+            'en' => [
+                'class' => 'centerimage',
+                'title' => '*** Important Notice ***',
+                'lines' => [
+                    'Please note that the network will go down today at 4:15 PM for approximately 15–30 minutes to conduct emergency repairs.',
+                    'During this time, all calls will be dropped and emails will be temporarily paused.',
+                    'Normal operations are expected to resume shortly after the interruption.',
+                    'Thank you for your understanding.',
+                ],
+            ],
+        ],
+
+        [
+            'enabled' => false,
+            'start'   => '2026-12-15',
+            'end'     => '2026-12-24',
+
+            'fr' => [
+                'class' => 'centerimage',
+                'title' => '*** Vacances d’hiver 2026 ***',
+                'lines' => [
+                    'Veuillez noter que nos bureaux seront fermés pour la période des Fêtes.',
+                    'Toute l’équipe STANDARD vous remercie pour votre soutien continu et vous souhaite de Joyeuses Fêtes!',
+                ],
+            ],
+
+            'en' => [
+                'class' => 'centerimage',
+                'title' => '*** Winter Holidays 2026 ***',
+                'lines' => [
+                    'Please note that our offices will be closed for the holiday season.',
+                    'The entire team at STANDARD thanks you for your continued support and wishes you Happy Holidays!',
+                ],
+            ],
+        ],
+    ];
+}
+
+/**
+ * Render active banner messages.
+ */
 function wts_render_message_banner(string $lang, bool $isDev): void
 {
     $dateHelper = new DateHelper();
+    $messages = wts_get_banner_messages();
 
-    // If dev site, then ignore dates
-    if ($isDev === true) {
-        echo wts_message_banner_full('fr');
-        echo wts_message_banner_full('en');
-        return;
-    }
-
-    // Show full banner before first expiry date
-    if ($dateHelper->isBeforeDate(WTS_BANNER_EXPIRY_FULL)) {
-        if ($lang === 'bi') {
-            echo wts_message_banner_full('fr');
-            echo wts_message_banner_full('en');
-        } elseif ($lang !== 'bi') {
-            echo wts_message_banner_full($lang);
+    foreach ($messages as $message) {
+        if (($message['enabled'] ?? false) !== true) {
+            continue;
         }
-        return;
-    }
 
-    // Show short banner between first and second expiry dates
-    if ($dateHelper->isBetweenDates(WTS_BANNER_EXPIRY_FULL, WTS_BANNER_EXPIRY_SHORT)) {
+        /**
+         * On the dev site, show all enabled messages regardless of date.
+         * On production, only show messages within their date range.
+         */
+        if ($isDev !== true) {
+            if (!wts_banner_is_active($dateHelper, $message)) {
+                continue;
+            }
+        }
+
         if ($lang === 'bi') {
-            echo wts_message_banner_short('fr');
-            echo wts_message_banner_short('en');
+            echo wts_render_single_banner_message($message, 'fr');
+            echo wts_render_single_banner_message($message, 'en');
         } else {
-            echo wts_message_banner_short($lang);
+            echo wts_render_single_banner_message($message, $lang);
         }
     }
 }
 
-function wts_message_banner_full(string $lang): string
+/**
+ * Check whether a banner message is active today.
+ */
+function wts_banner_is_active(DateHelper $dateHelper, array $message): bool
 {
-    ob_start();
-    if ($lang === 'fr') {
-        ?>
-        <div class="leftalign">
-            <h1 class="redtext">*** Portes Standard sera fermé le lundi 18 mai ***</h1> 
-            <h3>Veuillez noter que nous serons fermés le lundi 18 mai à l’occasion de la fête de la Reine.</h3>  
-            <h3>Nous reprendrons nos heures d’ouverture habituelles le mardi 19 mai. Merci de votre compréhension.</h3>
-        </div>
-        <?php
-    } else {
-        ?>
-        <div class="leftalign">
-            <h1 class="redtext">*** Standard Doors Will be Closed on Monday, May 18th ***</h1> 
-            <h3>Please note that we will be closed on Monday, May 18<sup>th</sup>, in observance of Victoria Day.</h3>  
-            <h3>We will resume regular business hours on Tuesday, May 19<sup>th</sup>. Thank you for your understanding.</h3>
-        </div>
-        <?php
+    $start = $message['start'] ?? null;
+    $end = $message['end'] ?? null;
+
+    if ($start === null || $end === null) {
+        return false;
     }
 
-    return ob_get_clean();
+    return $dateHelper->isBetweenDates($start, $end);
 }
 
-function wts_message_banner_short(string $lang): string
+/**
+ * Render one banner message in one language.
+ */
+function wts_render_single_banner_message(array $message, string $lang): string
 {
-    ob_start();
-    if ($lang === 'fr') {
-        ?>
-        <!--
-        <div class="centerimage">
-            <h1 class="redtext">*** Vacances d'hiver 2025-26 ***</h1> 
-            <h3>Notez que les livraisons reprendront le 12 janvier 2026 selon notre horaire habituel.</h3>
-            <h3>Toute l'équipe STANDARD tient à vous remercier pour votre soutien continu et vous souhaite de Joyeuses Fêtes et une très belle année 2026! </h3>
-        </div>
-        -->
-        <?php
-    } else {
-        ?>
-        <!--
-        <div class="centerimage">
-            <h1 class="redtext">*** Upcoming Easter Closure ***</h1> 
-            <h3>The entire team at STANDARD would like to thank you for your continued support and wish you Happy Holidays and all the best for 2026!</h3>
-        </div>
-        -->
-        <?php
+    if (!isset($message[$lang])) {
+        return '';
     }
+
+    $content = $message[$lang];
+
+    $class = $content['class'] ?? 'leftalign';
+    $title = $content['title'] ?? '';
+    $lines = $content['lines'] ?? [];
+
+    ob_start();
+    ?>
+    <div class="<?php echo esc_attr($class); ?>">
+        <?php if ($title !== '') : ?>
+            <h1 class="redtext"><?php echo wp_kses_post($title); ?></h1>
+        <?php endif; ?>
+
+        <?php foreach ($lines as $line) : ?>
+            <h3><?php echo wp_kses_post($line); ?></h3>
+        <?php endforeach; ?>
+    </div>
+    <?php
 
     return ob_get_clean();
 }
