@@ -36,8 +36,8 @@ function wts_get_banner_messages(): array
             'end'     => '2026-05-02',
 
             'fr' => [
-                'class' => 'leftalign',
-                'title_class' => 'banner-urgent',
+                'class' => 'banner-urgent',
+                'title_class' => '',
                 'title' => '*** Avis important ***',
                 'lines' => [
                     'Veuillez noter que le réseau sera interrompu aujourd’hui à 16 h 15 pour une durée approximative de 15 à 30 minutes afin d’effectuer des réparations d’urgence.',
