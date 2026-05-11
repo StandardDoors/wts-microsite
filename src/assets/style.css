@@ -28,32 +28,114 @@
     color:red;
 }
 
-.banner-warning {
+/* Shared banner styling */
+.banner-warning,
+.banner-urgent,
+.banner-info,
+.banner-success {
+    max-width: 1100px;
+    margin: 18px auto;
+    padding: 22px 28px;
+    border-radius: 12px;
+    border-left: 8px solid;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
     text-align: left;
-    color: brown;
-    background: #fff3cd;
-    padding: 20px;
     display: block;
-    border-radius: 1em;
+    line-height: 1.45;
 }
 
+/* Banner headings */
 .banner-warning h1,
-.banner-warning h3 {
-    color: inherit;
-}
-
-.banner-urgent {
-    text-align: left;
-    color: red;
-    background: #f8d7da;
-    padding: 20px;
-    display: block;
-    border-radius: 1em;
-}
-
 .banner-urgent h1,
-.banner-urgent h3 {
+.banner-info h1,
+.banner-success h1 {
+    margin: 0 0 12px 0;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* Banner body text */
+.banner-warning h3,
+.banner-urgent h3,
+.banner-info h3,
+.banner-success h3 {
+    margin: 8px 0;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.45;
+}
+
+/* Warning / yellow */
+.banner-warning {
+    color: #5f4300;
+    background: #fff7db;
+    border-left-color: #d99a00;
+}
+
+/* Urgent / red */
+.banner-urgent {
+    color: #7a1f1f;
+    background: #fde7e7;
+    border-left-color: #c62828;
+}
+
+/* Info / blue */
+.banner-info {
+    color: #174a68;
+    background: #e7f4fb;
+    border-left-color: #1f8ac0;
+}
+
+/* Success / green */
+.banner-success {
+    color: #245338;
+    background: #e8f6ee;
+    border-left-color: #2e8b57;
+}
+
+/* Keep child text consistent */
+.banner-warning h1,
+.banner-warning h3,
+.banner-urgent h1,
+.banner-urgent h3,
+.banner-info h1,
+.banner-info h3,
+.banner-success h1,
+.banner-success h3 {
     color: inherit;
+}
+
+/* Optional center-style banner */
+.banner-centered {
+    text-align: center;
+}
+
+/* Mobile */
+@media screen and (max-width: 700px) {
+    .banner-warning,
+    .banner-urgent,
+    .banner-info,
+    .banner-success {
+        margin: 12px 14px;
+        padding: 18px 20px;
+        border-left-width: 6px;
+        border-radius: 10px;
+    }
+
+    .banner-warning h1,
+    .banner-urgent h1,
+    .banner-info h1,
+    .banner-success h1 {
+        font-size: 22px;
+    }
+
+    .banner-warning h3,
+    .banner-urgent h3,
+    .banner-info h3,
+    .banner-success h3 {
+        font-size: 16px;
+    }
 }
 
 .bluetext{
