@@ -48,8 +48,8 @@ function wts_get_banner_messages(): array
             ],
 
             'en' => [
-                'class' => 'leftalign',
-                'title_class' => 'banner-urgent',
+                'class' => 'banner-urgent',
+                'title_class' => '',
                 'title' => '*** Important Notice ***',
                 'lines' => [
                     'Please note that the network will go down today at 4:15 PM for approximately 15–30 minutes to conduct emergency repairs.',
@@ -65,8 +65,8 @@ function wts_get_banner_messages(): array
             'end'     => '2026-05-19',
 
             'fr' => [
-                'class' => 'leftalign',
-                'title_class' => 'banner-warning',
+                'class' => 'banner-warning',
+                'title_class' => '',
                 'title' => '*** Portes Standard sera fermé le lundi 18 mai ***',
                 'lines' => [
                     'Veuillez noter que nous serons fermés le lundi 18 mai à l’occasion de la fête de la Reine.',
@@ -75,8 +75,8 @@ function wts_get_banner_messages(): array
             ],
 
             'en' => [
-                'class' => 'leftalign',
-                'title_class' => 'banner-warning',
+                'class' => 'banner-warning',
+                'title_class' => '',
                 'title' => '*** Standard Doors Will be Closed on Monday, May 18th ***',
                 'lines' => [
                     'Please note that we will be closed on Monday, May 18<sup>th</sup>, in observance of Victoria Day.',
@@ -91,8 +91,8 @@ function wts_get_banner_messages(): array
             'end'     => '2026-12-24',
 
             'fr' => [
-                'class' => 'centerimage',
-                'title_class' => 'banner-warning',
+                'class' => 'banner-warning',
+                'title_class' => '',
                 'title' => '*** Vacances d’hiver 2026 ***',
                 'lines' => [
                     'Veuillez noter que nos bureaux seront fermés pour la période des Fêtes.',
@@ -101,8 +101,8 @@ function wts_get_banner_messages(): array
             ],
 
             'en' => [
-                'class' => 'centerimage',
-                'title_class' => 'banner-warning',
+                'class' => 'banner-warning',
+                'title_class' => '',
                 'title' => '*** Winter Holidays 2026 ***',
                 'lines' => [
                     'Please note that our offices will be closed for the holiday season.',
@@ -180,7 +180,7 @@ function wts_render_single_banner_message(array $message, string $lang): string
     ?>
     <div class="<?php echo htmlspecialchars($class, ENT_QUOTES, 'UTF-8'); ?>">
         <?php if ($title !== '') : ?>
-            <h1 class="<?php echo htmlspecialchars($titleClass, ENT_QUOTES, 'UTF-8'); ?>">
+            <h1<?php echo $titleClass !== '' ? ' class="' . htmlspecialchars($titleClass, ENT_QUOTES, 'UTF-8') . '"' : ''; ?>>
                 <?php echo wts_banner_allowed_html($title); ?>
             </h1>
         <?php endif; ?>
