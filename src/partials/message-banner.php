@@ -172,16 +172,21 @@ function wts_render_single_banner_message(array $message, string $lang): string
 
     ob_start();
     ?>
-    <div class="<?php echo esc_attr($class); ?>">
+    <div class="<?php echo htmlspecialchars($class, ENT_QUOTES, 'UTF-8'); ?>">
         <?php if ($title !== '') : ?>
-            <h1 class="redtext"><?php echo wp_kses_post($title); ?></h1>
+            <h1 class="redtext"><?php echo wts_banner_allowed_html($title); ?></h1>
         <?php endif; ?>
 
         <?php foreach ($lines as $line) : ?>
-            <h3><?php echo wp_kses_post($line); ?></h3>
+            <h3><?php echo wts_banner_allowed_html($line); ?></h3>
         <?php endforeach; ?>
     </div>
     <?php
 
     return ob_get_clean();
+}
+
+function wts_banner_allowed_html(string $html): string
+{
+    return strip_tags($html, '<sup><br><strong><b><em><i>');
 }
