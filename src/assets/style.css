@@ -29,11 +29,12 @@
 }
 
 .banner-warning {
-    text-align: center;
+    text-align: left;
     color: brown;
     background: #fff3cd;
     padding: 20px;
     display: block;
+    border-radius: 1em;
 }
 
 .banner-warning h1,
@@ -42,11 +43,12 @@
 }
 
 .banner-urgent {
-    text-align: center;
+    text-align: left;
     color: red;
     background: #f8d7da;
     padding: 20px;
     display: block;
+    border-radius: 1em;
 }
 
 .banner-urgent h1,
