@@ -228,9 +228,17 @@ function wts_get_banner_messages(): array
 
 /**
  * Render active banner messages.
+ *
+ * @param string $lang Supported values: 'fr', 'en', or 'bi'.
+ * @param bool|null $devModeOverride Optional override.
+ *                                   true  = show all enabled banners regardless of dates.
+ *                                   false = use normal date logic.
+ *                                   null  = use WTS_BANNER_DEV_MODE.
  */
-function wts_render_message_banner(string $lang): void
+function wts_render_message_banner(string $lang, ?bool $devModeOverride = null): void
 {
+    $devMode = $devModeOverride ?? WTS_BANNER_DEV_MODE;
+
     $dateHelper = new DateHelper();
     $messages = wts_get_banner_messages();
 
@@ -244,10 +252,8 @@ function wts_render_message_banner(string $lang): void
          * - true: show all enabled messages regardless of date
          * - false: show only messages within their date range
          */
-        if (WTS_BANNER_DEV_MODE !== true) {
-            if (!wts_banner_is_active($dateHelper, $message)) {
-                continue;
-            }
+        if (!$devMode && !wts_banner_is_active($dateHelper, $message)) {
+            continue;
         }
 
         if ($lang === 'bi') {
