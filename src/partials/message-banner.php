@@ -20,7 +20,7 @@ use WTS\Helpers\DateHelper;
  * false = normal logic: only enabled banners within their start/end dates are shown.
  * true  = dev logic: all enabled banners are shown, regardless of start/end dates.
  */
-define('WTS_BANNER_DEV_MODE', true);
+define('WTS_BANNER_DEV_MODE', false);
 
 /**
  * Banner messages.
