@@ -2,6 +2,7 @@
 
 $pageTitle = 'WTS Home Tab Dev Bilingual';
 $lang = 'bi';
+$isDev = false;
 
 include 'partials/header.php';
 
