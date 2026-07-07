@@ -156,7 +156,7 @@ function wts_get_banner_messages(): array
                 'title_class' => '',
                 'title'       => '*** Portes Standard sera fermé la semaine du 27 juillet ***',
                 'lines'       => [
-                    'Veuillez noter que nous serons fermés du 27 juillet jusqu'au le 31 juillet.',
+                    'Veuillez noter que nous serons fermés du 27 juillet jusqu\'au le 31 juillet.',
                     'Nous reprendrons nos heures d’ouverture habituelles lundi le 3 aoùt. Merci de votre compréhension.',
                 ],
             ],
@@ -164,10 +164,10 @@ function wts_get_banner_messages(): array
             'en' => [
                 'class'       => 'banner-warning',
                 'title_class' => '',
-                'title'       => '*** Standard Doors Will be Closed the week of July 27<sup>th</sup> ***',
+                'title'       => '*** Standard Doors Will be Closed the Week of July 27<sup>th</sup> ***',
                 'lines'       => [
                     'Please note that we will be closed from July 27<sup>th</sup> until July 31<sup>st</sup>.',
-                    'We will resume regular business hours on Monday, Aug 3<sup>rd</sup>. Thank you for your understanding.',
+                    'We will resume regular business hours on Monday, August 3<sup>rd</sup>. Thank you for your understanding.',
                 ],
             ],
         ],
