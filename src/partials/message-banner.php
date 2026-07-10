@@ -156,8 +156,8 @@ function wts_get_banner_messages(): array
                 'title_class' => '',
                 'title'       => '*** Portes Standard sera fermé la semaine du 27 juillet ***',
                 'lines'       => [
-                    'Veuillez noter que nous serons fermés du 27 juillet jusqu\'au le 31 juillet.',
-                    'Nous reprendrons nos heures d’ouverture habituelles lundi le 3 aoùt. Merci de votre compréhension.',
+                    'Veuillez noter que nous serons fermés du 27 juillet jusqu\'au 31 juillet.',
+                    'Nous reprendrons nos heures d’ouverture habituelles lundi le 3 août. Merci de votre compréhension.',
                 ],
             ],
 
