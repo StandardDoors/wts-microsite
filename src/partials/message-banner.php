@@ -40,15 +40,15 @@ function wts_get_banner_messages(): array
     return [
         [
             'enabled' => false,
-            'start'   => '2026-05-11',
-            'end'     => '2026-05-12',
+            'start'   => '2026-09-10',
+            'end'     => '2026-09-11',
 
             'fr' => [
                 'class'       => 'banner-urgent',
                 'title_class' => '',
                 'title'       => '*** Avis important ***',
                 'lines'       => [
-                    'Veuillez noter que le réseau sera interrompu aujourd’hui à 16 h 15 pour une durée approximative de 15 à 30 minutes afin d’effectuer des réparations d’urgence.',
+                    'Veuillez noter que le réseau sera interrompu aujourd’hui à 16 h 30 pour une durée approximative de 60 à 90 minutes afin d’effectuer des réparations d’urgence.',
                     'Pendant cette période, tous les appels seront interrompus et les courriels seront temporairement suspendus.',
                     'Les opérations normales devraient reprendre peu après l’interruption.',
                     'Merci de votre compréhension.',
@@ -60,7 +60,7 @@ function wts_get_banner_messages(): array
                 'title_class' => '',
                 'title'       => '*** Important Notice ***',
                 'lines'       => [
-                    'Please note that the network will go down today at 4:15 PM for approximately 15–30 minutes to conduct emergency repairs.',
+                    'Please note that the network will go down today at 4:30 PM for approximately 60-90 minutes to conduct emergency repairs.',
                     'During this time, all calls will be dropped and emails will be temporarily paused.',
                     'Normal operations are expected to resume shortly after the interruption.',
                     'Thank you for your understanding.',
