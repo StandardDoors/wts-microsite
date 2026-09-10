@@ -40,8 +40,8 @@ function wts_get_banner_messages(): array
     return [
         [
             'enabled' => true,
-            'start'   => '2026-09-10',
-            'end'     => '2026-09-11',
+            'start'   => '2026-09-16',
+            'end'     => '2026-09-17',
 
             'fr' => [
                 'class'       => 'banner-urgent',
