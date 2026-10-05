@@ -68,6 +68,32 @@ function wts_get_banner_messages(): array
 
         [
             'enabled' => true,
+            'start'   => '2026-10-5',
+            'end'     => '2026-10-6',
+
+            'fr' => [
+                'class'       => 'banner-urgent',
+                'title_class' => '',
+                'title'       => '*** Interruption temporaire du système téléphonique ***',
+                'lines'       => [
+                    'Notre système téléphonique est temporairement hors service en raison de problèmes techniques. Nous travaillons actuellement à résoudre la situation et prévoyons un retour à la normale sous peu.',
+                    'Nous nous excusons pour les inconvénients et vous remercions de votre patience.',
+                ],
+            ],
+
+            'en' => [
+                'class'       => 'banner-urgent',
+                'title_class' => '',
+                'title'       => '*** Temporary Phone System Outage ***',
+                'lines'       => [
+                    'Our phone system is temporarily unavailable due to technical issues. We are working to resolve the problem and expect service to be restored shortly.',
+                    'We apologize for the inconvenience and thank you for your patience.',
+                ],
+            ],
+        ],
+        
+        [
+            'enabled' => true,
             'start'   => '2026-05-01',
             'end'     => '2026-05-19',
 
