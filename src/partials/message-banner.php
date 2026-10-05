@@ -39,7 +39,7 @@ function wts_get_banner_messages(): array
 {
     return [
         [
-            'enabled' => true,
+            'enabled' => false,
             'start'   => '2026-09-15',
             'end'     => '2026-09-17',
 
@@ -67,7 +67,7 @@ function wts_get_banner_messages(): array
         ],
 
         [
-            'enabled' => true,
+            'enabled' => false,
             'start'   => '2026-10-5',
             'end'     => '2026-10-6',
 
