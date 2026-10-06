@@ -65,7 +65,7 @@ function wts_get_banner_messages(): array
                 ],
             ],
         ],
-
+/*
         [
             'enabled' => false,
             'start'   => '2026-10-5',
@@ -91,7 +91,7 @@ function wts_get_banner_messages(): array
                 ],
             ],
         ],
-
+*/
         [
             'enabled' => true,
             'start'   => '2026-05-01',
